@@ -43,7 +43,8 @@ describe('world proposal boundary',()=>{
 });
 
 it('a failed local request leaves an explicit retry path for a configured provider',async()=>{
- const env={...process.env,ASTRA_PROVIDER:'claude-cli',CLAUDE_BIN:'/usr/bin/false',CLAUDE_MODEL:'retry-regression'};
+ // Node exists on every supported test host and rejects the Claude-only flags.
+ const env={...process.env,ASTRA_PROVIDER:'claude-cli',CLAUDE_BIN:process.execPath,CLAUDE_MODEL:'retry-regression'};
  await expect(interpret(new WorldSimulation().view('player'),'Say hello',env)).rejects.toThrow();
  const status=providerInfo(env);
  expect(status.label).toMatch(/failed|exit|error/i);

@@ -14,7 +14,7 @@ export function createEnvironmentArt({onChange}){
  const panel=document.createElement('section');panel.id='environmentArt';panel.setAttribute('aria-label','Environment art controls');
  panel.innerHTML='<span>ENVIRONMENT</span><div><button id="environmentInk" aria-pressed="true">Ink</button><button id="environmentPixel" aria-pressed="false">Pixel</button></div><p id="environmentNote"></p><button id="environmentRetry" hidden>Retry artwork</button>';document.body.append(panel);
  function sync(){
-  panel.hidden=room==='inn';document.body.classList.toggle('environment-art',room!=='inn');document.body.classList.toggle('environment-ink',room!=='inn'&&enabled&&loaded);
+  const visible=room!=='inn'&&room!=='generated';panel.hidden=!visible;document.body.classList.toggle('environment-art',visible);document.body.classList.toggle('environment-ink',visible&&enabled&&loaded);
   panel.querySelector('#environmentInk').setAttribute('aria-pressed',String(enabled));panel.querySelector('#environmentInk').disabled=!loaded;
   panel.querySelector('#environmentPixel').setAttribute('aria-pressed',String(!enabled));
   panel.querySelector('#environmentNote').textContent=error?'Artwork could not load. The pixel map remains playable.':!loaded?`Loading prepared scenery ${loading}/18…`:enabled?'Cinderwatch, in ink.':'Original pixel scenery.';
@@ -54,7 +54,7 @@ export function createEnvironmentArt({onChange}){
  return {
   setLayout(scene){layout=scene.map(p=>({...p}));if(loaded)rebuild();else void load()},
   setRoom(value){if(value!==room){room=value;sync()}},
-  get active(){return room!=='inn'&&loaded&&enabled},
+  get active(){return room!=='inn'&&room!=='generated'&&loaded&&enabled},
   get ready(){return load()},
   draw(c,currentRoom){if(!loaded||!enabled||currentRoom==='inn')return false;const image=cache.get(currentRoom||'outside');if(!image)return false;c.drawImage(image,0,0,800,600);return true}
  };

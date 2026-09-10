@@ -1,7 +1,7 @@
 // Grounded props use the world's existing pixel scale, materials and lighting.
 const palettes={outline:'#182323',shadow:'#0c181b70',wood:'#755039',woodLight:'#ac8052',woodDark:'#44372b',metal:'#89938a',metalLight:'#c1c3a2',metalDark:'#4b5d59',leaf:'#6b8050',leafLight:'#a4ae72',cloth:'#bcaa78'};
-const shape=entity=>entity.props.container?'chest':entity.props.heal?'herbs':entity.props.food?'ration':entity.props.lever?'crowbar':entity.props.leverable?'shutter':entity.props.mechanism?'release':/note|ledger/.test(entity.id)?'note':'stone';
-const sizes={chest:[24,19],herbs:[16,15],ration:[16,11],crowbar:[8,21],shutter:[25,30],release:[12,19],note:[12,12],stone:[13,8]};
+const shape=entity=>entity.props.notebookBook?'notebook':entity.props.notebookTarget?'kindling':entity.props.notebookObject?entity.props.notebookKind:entity.props.container?'chest':entity.props.heal?'herbs':entity.props.food?'ration':entity.props.lever?'crowbar':entity.props.leverable?'shutter':entity.props.mechanism?'release':/note|ledger/.test(entity.id)?'note':'stone';
+const sizes={chest:[24,19],herbs:[16,15],ration:[16,11],crowbar:[8,21],shutter:[25,30],release:[12,19],note:[12,12],stone:[13,8],notebook:[20,14],kindling:[30,30],water:[12,17],torch:[10,27]};
 export function worldObjectBounds(entity){if(entity.kind==='actor')return{left:-18,right:18,top:-45,bottom:18};const[w,h]=sizes[shape(entity)];return{left:-w/2-2,right:w/2+2,top:-h-3,bottom:5};}
 function box(c,x,y,w,h,color){c.fillStyle=color;c.fillRect(x,y,w,h);}
 function poly(c,points,color){c.fillStyle=color;c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fill();}
@@ -10,6 +10,24 @@ export function drawWorldObject(c,entity,selected=false){
  const p=palettes,k=shape(entity),[w]=sizes[k];c.save();c.translate(Math.round(entity.location.x),Math.round(entity.location.y));
  c.fillStyle=p.shadow;c.beginPath();c.ellipse(1,2,w*.6,3,0,0,Math.PI*2);c.fill();
  if(selected){c.strokeStyle='#e3ba72';c.lineWidth=1;c.beginPath();c.ellipse(0,2,w*.65+3,5,0,0,Math.PI*2);c.stroke();}
+ // The inn chest is already painted in the room background. Keep its shared
+ // entity and selection ring without drawing a second tiny chest over it.
+ if(entity.id==='inn-chest'){if(entity.props.open){box(c,-18,-8,36,6,'#15201b');box(c,-15,-7,12,2,p.cloth);}c.restore();return;}
+ if(k==='notebook'){
+  box(c,-10,-12,20,14,p.outline);box(c,-8,-13,18,12,'#e5d6ad');box(c,-8,-13,2,12,'#a1613e');for(let y=-10;y<-2;y+=3)box(c,-3,y,9,1,'#9d8b64');c.restore();return;
+ }
+ if(k==='kindling'){
+  poly(c,[[-15,-4],[-11,-9],[12,-9],[15,-4],[11,2],[-11,2]],p.outline);poly(c,[[-12,-4],[-9,-7],[10,-7],[12,-4],[9,0],[-9,0]],p.metalDark);
+  for(const y of [-6,-3]){box(c,-9,y,18,2,p.wood);box(c,-7,y,9,1,p.woodLight);}
+  if(entity.props.wet)box(c,-8,-2,17,2,'#71a9a4');
+  if(entity.props.onFire){poly(c,[[-8,-4],[-10,-12],[-4,-26],[-3,-14],[4,-22],[9,-12],[7,-4]],'#d97f37');poly(c,[[-4,-4],[-5,-11],[1,-18],[2,-9],[5,-4]],'#f4cd74');}c.restore();return;
+ }
+ if(k==='water'){
+  box(c,-6,-14,12,16,p.outline);box(c,-4,-13,8,14,'#91b5ac');box(c,-3,-17,6,3,p.metalDark);box(c,-3,-10,1,8,'#e0e7c9');box(c,-4,-2,8,3,'#537e7e');c.restore();return;
+ }
+ if(k==='torch'){
+  box(c,-2,-15,4,17,p.outline);box(c,-1,-14,2,15,p.woodLight);poly(c,[[-4,-14],[-5,-20],[0,-28],[2,-22],[5,-18],[3,-13]],'#d98039');poly(c,[[-2,-15],[0,-23],[3,-16]],'#f2ca6e');c.restore();return;
+ }
  if(k==='stone'){
   poly(c,[[-7,-2],[-5,-7],[0,-9],[6,-5],[7,0],[2,2],[-5,1]],p.outline);
   poly(c,[[-5,-3],[-3,-6],[1,-7],[5,-4],[1,-1]],'#838578');poly(c,[[1,-1],[5,-4],[5,0],[1,1],[-4,0]],'#505e57');box(c,-2,-6,3,1,'#b4ac88');

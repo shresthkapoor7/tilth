@@ -3,6 +3,7 @@ import {MOVE_STYLES} from './awakened-moves.js';
 import {COMBOS} from '../content/game-config.js';
 import {ACTORS} from '../content/encounters.js';
 import {HAIRSTYLES,CLOTHES,WEAPONS} from '../content/characters.js';
+import {NOTEBOOK_SCHEMAS,validateNotebookContent} from './notebook-core.js';
 const str=(maxLength=240)=>({type:'string',minLength:1,maxLength});
 const num=(minimum,maximum)=>({type:'integer',minimum,maximum});
 const obj=properties=>({type:'object',properties,required:Object.keys(properties),additionalProperties:false});
@@ -14,6 +15,7 @@ const move=obj({style:{type:'string',enum:MOVE_STYLES},damage:num(8,45),range:nu
 const combo=obj({name:str(60),steps:list({type:'string',enum:['Slash','Heavy','Spin','Bash','Dodge']},3,3),move});
 const sourceEventIds=list(str(100),20);
 export const SCHEMAS={
+ ...NOTEBOOK_SCHEMAS,
  witch:obj({name:str(40),line:str(300),sourceEventIds:list(str(100),20,0)}),
  region:obj({objective:obj({title:str(70),description:str(300)}),houses:list(obj({name:str(60),kind:{type:'string',enum:['home','inn','smith']},resident:str(30),greeting:str(240),request:str(240),thanks:str(240)}),2,1),enemies:list(obj({name:str(40),kind:{type:'string',enum:['raider','sentry','mage']},hp:num(55,140),color,taunt:str(160)}),5,3),layout:{type:'string',enum:REGION_LAYOUTS},seed:num(1,999999),name:str(60),description:str(400),witchLine:str(450),verdict:{type:'string',enum:['welcoming','hostile']},sourceEventIds:list(str(100),20,0),theme:{type:'string',enum:['forest','marsh','frost','volcanic']},accent:color,enemyCount:num(3,5),patches:list(obj({kind:{type:'string',enum:['trees','rock','water','lava']},x:num(2,35),y:num(2,25),w:num(2,8),h:num(2,6)}),22,6),landmarks:list(obj({kind:{type:'string',enum:['shrine','arch','tower','camp','crystal']},name:str(40),x:num(4,35),y:num(4,25)}),4,1)}),
  reaction:obj({speaker:{type:'string',enum:ACTORS.map(a=>a.id)},line:str(160),sourceEventIds}),
@@ -39,6 +41,7 @@ export function validateContent(kind,value,events){
  if(kind==='region'&&value.enemies&&value.enemyCount!==value.enemies.length)throw new Error('Enemy count must match the region roster.');
  if(kind==='region'&&value.verdict==='hostile'){if(!events.some(e=>value.sourceEventIds.includes(e.id)&&e.type==='combat_hit'&&ACTORS.some(a=>a.id===e.target&&!a.enemy&&a.attackable!==false)))throw new Error('A hostile witch response needs evidence of attacking a townsperson.');if(value.enemyCount<1)throw new Error('A hostile region must contain a challenge.');}
  const allowed=new Set(events.map(e=>e.id));
+ if(kind.startsWith('notebook_'))validateNotebookContent(kind,value);
  if((value.sourceEventIds||[]).some(id=>!allowed.has(id)))throw new Error('Generated content cites unknown events.');
  if(kind==='quest'&&value.objectives.some(o=>!(o.type==='visit_room'?['inn','smith','home']:['Cleave','Cyclone','Breaker']).includes(o.target)))throw new Error('Quest objective cannot be executed.');
  if(kind==='awakening'&&value.skill.cooldownMs<value.skill.durationMs+300)throw new Error('Skill recovery budget exceeded.');

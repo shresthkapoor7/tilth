@@ -1,0 +1,28 @@
+#creationNotebook{width:min(800px,calc(100vw - 28px));max-height:calc(100dvh - 32px);box-sizing:border-box;padding:24px;color:#383833;background:#e8ddbc;border:3px solid #555947;box-shadow:7px 8px 0 #202b2bc9;font:19px/1.35 VT323,monospace;overflow:auto}
+#creationNotebook::backdrop{background:#182524b8}
+#creationNotebook h2,#creationNotebook h3,#creationNotebook p{margin:0 0 12px}
+#creationNotebook h2{font-size:30px}#creationNotebook h3{font-size:23px}
+#creationNotebook .eyebrow{color:#76553c;font-size:15px;margin:0}
+#creationNotebook button{font:inherit;cursor:pointer;border:2px solid #73724f;padding:7px 12px;background:#f7eecf;color:#343e37}
+#creationNotebook button.primary,#creationNotebook button[aria-pressed=true]{background:#404f47;color:#fff1c4}
+#creationNotebook button:disabled{opacity:.55;cursor:default}
+#creationNotebook button:focus-visible,#creationNotebook textarea:focus-visible{outline:3px solid #bc673b;outline-offset:3px}
+.notebook-heading{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.notebook-heading>button{white-space:nowrap;flex-shrink:0}
+.notebook-tabs{display:flex;gap:8px;margin:8px 0 20px}
+.notebook-columns{display:grid;grid-template-columns:1fr 1fr;gap:25px}
+.notebook-columns>section+section{border-left:1px solid #9e9573;padding-left:24px}
+#creationNotebook label{display:block;margin-bottom:6px;font-size:22px}
+#creationNotebook textarea{box-sizing:border-box;width:100%;resize:vertical;min-height:92px;font:inherit;border:1px solid #999074;padding:10px;color:#283b36;background:#faf0d5}
+#creationNotebook .modal-note{font-size:16px;color:#68634f;line-height:1.35;margin:8px 0 12px}
+.notebook-example{margin:20px 0;border-top:1px solid #ac9d76;padding-top:12px}.notebook-example summary{cursor:pointer;margin-bottom:10px}
+.notebook-entry,.notebook-draft{padding:10px 0;border-bottom:1px solid #b6a781;margin-bottom:10px}
+.notebook-entry b,.notebook-entry span{display:block}.notebook-entry span{font-size:16px;margin:4px 0 7px}
+#creationNotebook .notebook-entry button,#creationNotebook .notebook-draft button{font-size:16px;margin:3px 5px 3px 0;padding:4px 9px}
+#notebookMessage{font-size:17px;color:#774a2e;margin-top:14px!important}
+#notebookTarget{font-size:17px;margin-top:18px!important}
+#notebookActions{position:fixed;z-index:35;right:22px;bottom:110px;display:flex;flex-direction:column;gap:6px;max-width:min(290px,calc(100vw - 28px))}
+#notebookActions[hidden],#notebookActions button[hidden]{display:none}
+#notebookActions button{font:18px VT323,monospace;padding:8px 12px;border:2px solid #a6925f;background:#303f3c;color:#f7e7b9;cursor:pointer;box-shadow:3px 3px 0 #19252280}
+@media(max-width:600px){#creationNotebook{padding:16px}.notebook-columns{grid-template-columns:1fr;gap:18px}.notebook-columns>section+section{border-left:0;border-top:1px solid #9e9573;padding:18px 0 0}.notebook-tabs button{flex:1;padding:7px!important}#notebookActions{right:14px;bottom:104px}#notebookActions button{font-size:16px}}
+@media(max-width:600px){body:has(#worldActions[open]) #notebookActions{display:none}}

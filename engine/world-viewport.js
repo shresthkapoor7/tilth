@@ -1,15 +1,19 @@
 // The canvas uses cover sizing and player-anchored percentage object-position.
 // Keep selection and the on-screen list on this same transform.
-export function canvasViewport({bounds,width=800,height=600,position,viewport}){
+export function canvasViewport({bounds,width=800,height=600,position,viewport,camera={scale:1,x:0,y:0,width,height}}){
  if(bounds.width<=0||bounds.height<=0)return null;
- const scale=Math.max(bounds.width/width,bounds.height/height);
- const originX=bounds.left+(bounds.width-width*scale)*position.x/width;
- const originY=bounds.top+(bounds.height-height*scale)*position.y/height;
- const clipLeft=Math.max(bounds.left,viewport.left??0),clipTop=Math.max(bounds.top,viewport.top??0);
- const clipRight=Math.min(bounds.left+bounds.width,(viewport.left??0)+viewport.width);
- const clipBottom=Math.min(bounds.top+bounds.height,(viewport.top??0)+viewport.height);
+ const backingScale=(camera.fit==='contain'?Math.min:Math.max)(bounds.width/width,bounds.height/height);
+ const worldWidth=camera.width??800,worldHeight=camera.height??600;
+ const scale=backingScale*camera.scale;
+ const imageLeft=bounds.left+(bounds.width-width*backingScale)*(camera.anchor?.x??position.x/worldWidth);
+ const imageTop=bounds.top+(bounds.height-height*backingScale)*(camera.anchor?.y??position.y/worldHeight);
+ const originX=imageLeft+(camera.x??0)*backingScale;
+ const originY=imageTop+(camera.y??0)*backingScale;
+ const clipLeft=Math.max(bounds.left,viewport.left??0,imageLeft),clipTop=Math.max(bounds.top,viewport.top??0,imageTop);
+ const clipRight=Math.min(bounds.left+bounds.width,(viewport.left??0)+viewport.width,imageLeft+width*backingScale);
+ const clipBottom=Math.min(bounds.top+bounds.height,(viewport.top??0)+viewport.height,imageTop+height*backingScale);
  if(clipRight<=clipLeft||clipBottom<=clipTop)return null;
- return {scale,originX,originY,clipLeft,clipTop,clipRight,clipBottom,left:Math.max(0,(clipLeft-originX)/scale),top:Math.max(0,(clipTop-originY)/scale),right:Math.min(width,(clipRight-originX)/scale),bottom:Math.min(height,(clipBottom-originY)/scale)};
+ return {scale,originX,originY,clipLeft,clipTop,clipRight,clipBottom,left:Math.max(0,(clipLeft-originX)/scale),top:Math.max(0,(clipTop-originY)/scale),right:Math.min(worldWidth,(clipRight-originX)/scale),bottom:Math.min(worldHeight,(clipBottom-originY)/scale)};
 }
 export function clientToWorld({x,y},view){
  if(!view||x<view.clipLeft||x>view.clipRight||y<view.clipTop||y>view.clipBottom)return null;

@@ -2,6 +2,8 @@
 
 # Notebook World integration into Tilth
 
+Current integration now combines teammate gameplay `2a23f44` and main `6f2e8fc`. See [current status](../STATUS.md), [environment coverage](ENVIRONMENT_ART.md) and [implemented notebook scope](NOTEBOOK_PORT.md). The checkpoint notes below describe the earlier selective port; the linked current documents supersede its pending-feature statements.
+
 10 September 2026. Based on shresthkapoor7/tilth commit `d40bf09`; Notebook World checkpoint `dc6eee2`. All of Tilth's existing history is retained. This branch is a proposed team integration, not a change to the teammate's main branch.
 
 ## Foundation decision

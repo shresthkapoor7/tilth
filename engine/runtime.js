@@ -3,6 +3,7 @@ import {questHistory,validateQuestNovelty} from './quest-guidance.js';
 import {GENERATION_POLICY as POLICY,HOUSES,COMBOS} from '../content/game-config.js';
 import {validateContent} from './contracts.js';
 import {initialCharacterMemory,restoreCharacterMemory} from './character-memory.js';
+import {completeNotebookJob,notebookJobContext,restoreNotebookJobs} from './notebook-runtime.js';
 export const SAVE_KEY='glyph-engine-v1';
 const initial=()=>({version:1,events:[],seen:[],jobs:[],journal:[],offers:[],quests:[],characterMemory:initialCharacterMemory(),activeAwakening:null,lastAwakeningEvidence:0,lastReflectionEvidence:0,profile:{heroClass:'Warrior',gear:'Ashguard armor'}});
 export class GameRuntime {
@@ -15,6 +16,7 @@ export class GameRuntime {
   }}catch{this.storageWarning='Saved progress could not be read; this session started fresh.'}
   for(const job of this.state.jobs)if(job.kind==='awakening'&&!job.rewardQuestId&&['queued','running','failed'].includes(job.status)){job.status='cancelled';job.error=null;}
   this.state.characterMemory=restoreCharacterMemory(this.state.characterMemory,this.state.events);
+  restoreNotebookJobs(this.state.jobs);
  }
  subscribe(fn){this.listeners.add(fn);return()=>this.listeners.delete(fn)}
  changed(){try{this.storage?.setItem(SAVE_KEY,JSON.stringify(this.state))}catch{this.storageWarning='Progress cannot be saved in this browser.'}this.listeners.forEach(fn=>fn(this.state))}
@@ -44,7 +46,7 @@ export class GameRuntime {
   const event=this.record('quest_requested',`rowan:${this.state.quests.length}`,reason==='followup'?'Requested the next chapter after completing a quest':'Asked Rowan for a task',{unique:true});
   if(event)this.enqueue('quest',`quest:${this.state.quests.length}`,[...this.state.events.filter(e=>e.meaningful).slice(-19),event]);this.changed();
  }
- context(job){return {version:1,kind:job.kind,events:this.state.events.filter(e=>job.eventIds.includes(e.id)),profile:this.state.profile,...(job.rewardQuestId?{rewardQuestId:job.rewardQuestId}:{}),knownRooms:HOUSES.map(({id,name})=>({id,name})),knownCombos:COMBOS.map(({id,name})=>({id,name})),pastQuests:job.questHistory||questHistory(this.state.quests),activeAwakening:this.activeOffer()?.content.name||null}}
+ context(job){return {version:1,kind:job.kind,events:this.state.events.filter(e=>job.eventIds.includes(e.id)),profile:this.state.profile,...(job.rewardQuestId?{rewardQuestId:job.rewardQuestId}:{}),knownRooms:HOUSES.map(({id,name})=>({id,name})),knownCombos:COMBOS.map(({id,name})=>({id,name})),pastQuests:job.questHistory||questHistory(this.state.quests),activeAwakening:this.activeOffer()?.content.name||null,...(job.kind.startsWith('notebook_')?notebookJobContext(job):{})}}
  requestAwakening(questId){
   const quest=this.state.quests.find(q=>q.id===questId&&q.status==='complete');
   const completion=this.state.events.find(e=>e.type==='quest_completed'&&e.target===questId);
@@ -62,6 +64,7 @@ export class GameRuntime {
   if(job.kind==='quest')validateQuestNovelty(content,this.context(job).pastQuests);
   if(job.kind==='quest')this.state.quests.push({id:job.id,content,status:'offered',completed:content.objectives.map(()=>false)});
   if(job.kind==='journal')this.state.journal.push({id:job.id,title:content.title,summary:content.summary,sourceEventIds:content.sourceEventIds,source:'ai',time:this.clock()});
+  if(job.kind.startsWith('notebook_'))completeNotebookJob(job,content);
   job.status='complete';job.error=null;this.changed();
  }
  decideAwakening(id,accept){const offer=this.state.offers.find(o=>o.id===id&&o.status==='pending');if(!offer)return;
