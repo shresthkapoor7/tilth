@@ -1,5 +1,7 @@
 # Tilth
 
+**Team handoff:** [Art assets, style specification and exact prompts](docs/ART_HANDOFF.md) · [Notebook architecture and walkthrough](docs/NOTEBOOK_PORT.md) · [Current integration status](STATUS.md). All are available on `codex/tilth-integration` in this repository.
+
 Tilth is the active game base. This integration adds unrestricted action text, deterministic objects and consequences, and stateful NPC decisions to its pixel world, continuous movement, combat and character creator. See [the integration design](docs/WORLD_INTEGRATION_PLAN.md). The game concept is Akito Yamauchi’s; teammate code and art retain their source attribution.
 
 A 2D pixel-art RPG prototype where exploration and learned techniques can lead to AI-generated quests, character changes, and optional awakenings.

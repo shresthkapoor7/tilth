@@ -2,6 +2,8 @@
 
 Updated 10 September 2026. Branch: `codex/tilth-integration` in `shresthkapoor7/tilth`. This feature branch combines the pushed gameplay-improvements branch at `2a23f44`, latest main at `6f2e8fc`, and our environment/notebook work. Teammate main and other feature branches are not overwritten. Unpushed teammate edits are not available for comparison.
 
+Team continuation: [the art handoff](docs/ART_HANDOFF.md) gathers the current style specification, exact prompts, references, masters, alpha-cleanup workflow, renderer boundaries and next work. Teammates can use this pushed branch directly; separate art/notebook PRs were not opened.
+
 - [Cinderwatch scenery](docs/ENVIRONMENT_ART.md): 17 first-pass generated assets, 15 loaded in gameplay, all three building exteriors, outdoor props, ground/lava/bridge and all existing interiors covered. Props have verified alpha. Runtime images are optimized WebP; full-resolution lossless masters and prompts are retained. The active new files total 1.04MB. Scene changes reuse cached art.
 - [Notebook](docs/NOTEBOOK_PORT.md): discover the inn-table notebook, create water/torch/stone, author a bounded use law, and change the kindling's actual state. Objects use the teammate's existing inventory, ownership, world events and save. AI drafts require explicit inscription; labeled handwritten examples work offline. No generated JavaScript or duplicate simulation.
 - The teammate's usable objects, containers, witnessed consequences, traits, roaming enemies, combat, quest-earned awakening combos, boundary witch and generated regions remain integrated. Camera selection now handles the 1600×1200 backing canvas and centered inn zoom.
