@@ -1,0 +1,359 @@
+[
+  {
+    "key": "terrain",
+    "file": "public/art/environment/terrain-v1.webp",
+    "masterFile": "docs/art/environment-master/terrain-v1.webp",
+    "sourceFile": "exec-053f4839-6d4d-406e-939e-9845bc4c6adc.png",
+    "sourceSha256": "c817171fa35f854c03e696431176ce1249ba077332369c8c6d504364ad496b77",
+    "sha256": "17d186caee7a4f241fa7aa070704529de1a9d6624fcf704ff368f49a00edf1e2",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 327320,
+    "transparentFraction": 0.0,
+    "alphaBounds": [
+      0,
+      0,
+      1448,
+      1086
+    ],
+    "masterVisibleRgbPreserved": true,
+    "runtimeWidth": 1448,
+    "runtimeHeight": 1086
+  },
+  {
+    "key": "building-inn",
+    "file": "public/art/environment/building-inn-v1.webp",
+    "masterFile": "docs/art/environment-master/building-inn-v1.webp",
+    "sourceFile": "exec-25124755-fe72-429c-93d2-2f4563d61112.png",
+    "sourceSha256": "1b607a29e3d390be73a218d961d194b161473fa965b371fcc03bb8dffe28400b",
+    "sha256": "c1f99bfa0b0b64da50511df6872745e38c3690c7435e039b1ca22d465c903ea7",
+    "width": 1268,
+    "height": 1241,
+    "bytes": 101130,
+    "transparentFraction": 0.3806,
+    "alphaBounds": [
+      33,
+      82,
+      1244,
+      1167
+    ],
+    "masterVisibleRgbPreserved": true,
+    "runtimeWidth": 608,
+    "runtimeHeight": 546
+  },
+  {
+    "key": "building-smith",
+    "file": "public/art/environment/building-smith-v1.webp",
+    "masterFile": "docs/art/environment-master/building-smith-v1.webp",
+    "sourceFile": "exec-906c9f05-3604-4584-95c5-fdb867046fe4.png",
+    "sourceSha256": "e46b7cb27bc00a2c0c2935a6892eecef9e8ef4c23f0853d62311f36b4c304a12",
+    "sha256": "a1df47d2310bd355f3a101d4162a226f4d74be9bbe6e90b8da35f00ee4fc4b19",
+    "width": 1312,
+    "height": 1199,
+    "bytes": 91366,
+    "transparentFraction": 0.3988,
+    "alphaBounds": [
+      72,
+      45,
+      1256,
+      1134
+    ],
+    "masterVisibleRgbPreserved": true,
+    "runtimeWidth": 608,
+    "runtimeHeight": 560
+  },
+  {
+    "key": "building-home",
+    "file": "public/art/environment/building-home-v1.webp",
+    "masterFile": "docs/art/environment-master/building-home-v1.webp",
+    "sourceFile": "exec-26f750f7-d0bf-4529-9510-d3a3d3ccde21.png",
+    "sourceSha256": "8b178d05886eb82086c96b980fdd37a87e1159882bb315980cebd1e21aefc16c",
+    "sha256": "057c15adace6ed9ce941db6959abe71dc68194f7e6847015683ca5b8c3531d7d",
+    "width": 1312,
+    "height": 1199,
+    "bytes": 108022,
+    "transparentFraction": 0.4039,
+    "alphaBounds": [
+      69,
+      54,
+      1258,
+      1147
+    ],
+    "masterVisibleRgbPreserved": true,
+    "runtimeWidth": 608,
+    "runtimeHeight": 560
+  },
+  {
+    "key": "bridge",
+    "file": "public/art/environment/bridge-v1.webp",
+    "masterFile": "docs/art/environment-master/bridge-v1.webp",
+    "sourceFile": "exec-74729e64-dc7b-4183-914e-133dd6837610.png",
+    "sourceSha256": "b39297aa8f49270fd1dcf237afa4aec255638ec1015a606cc011d1313e00dd55",
+    "sha256": "6d503cf22aa3d81d80ae199c9f547577fb79b90de984c3efa2c059ecbba7da61",
+    "width": 1808,
+    "height": 870,
+    "bytes": 27904,
+    "transparentFraction": 0.3763,
+    "alphaBounds": [
+      105,
+      106,
+      1705,
+      760
+    ],
+    "masterVisibleRgbPreserved": true,
+    "runtimeWidth": 488,
+    "runtimeHeight": 204
+  },
+  {
+    "key": "forge",
+    "file": "public/art/environment/forge-v1.webp",
+    "masterFile": "docs/art/environment-master/forge-v1.webp",
+    "sourceFile": "exec-9b4b2a01-6ffc-401b-8446-5e9873f86473.png",
+    "sourceSha256": "4be950151f570c987b1ef61d678e94696f7be304144368282583ce4aaf79de77",
+    "sha256": "e1e4a3cb0af61c5aa7fc1d17107092e0711f84b421158e02f1ec57151a3e3c4c",
+    "width": 1452,
+    "height": 1083,
+    "bytes": 57910,
+    "transparentFraction": 0.5333,
+    "alphaBounds": [
+      188,
+      192,
+      1264,
+      896
+    ],
+    "masterVisibleRgbPreserved": true,
+    "runtimeWidth": 488,
+    "runtimeHeight": 322
+  },
+  {
+    "key": "outdoor-anvil",
+    "file": "public/art/environment/outdoor-anvil-v1.webp",
+    "masterFile": "docs/art/environment-master/outdoor-anvil-v1.webp",
+    "sourceFile": "exec-7e74fd6d-a52a-4be6-930a-0d23afbffeb3.png",
+    "sourceSha256": "96ce61aaaa84419fb1470902cab7e03220ea203f1ec3b1377e73b7ab06bcde12",
+    "sha256": "0116a71cb94825cf1e5bd704ffd31849517d15e9564362154355aebde966cb22",
+    "width": 1436,
+    "height": 1096,
+    "bytes": 33366,
+    "transparentFraction": 0.6317,
+    "alphaBounds": [
+      68,
+      156,
+      1367,
+      946
+    ],
+    "masterVisibleRgbPreserved": true,
+    "runtimeWidth": 488,
+    "runtimeHeight": 300
+  },
+  {
+    "key": "crate",
+    "file": "public/art/environment/crate-v1.webp",
+    "masterFile": "docs/art/environment-master/crate-v1.webp",
+    "sourceFile": "exec-5940cf96-bb53-48db-bab3-05acf77102dc.png",
+    "sourceSha256": "d0961e5c14181974935df73db9fb81893c2251bb391e7c81933cdb2583e0364a",
+    "sha256": "8dc4aa998cb0b1de668d088028996d6214460f1ee1422182414c3cbaa4777215",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 80556,
+    "transparentFraction": 0.7107,
+    "alphaBounds": [
+      294,
+      280,
+      960,
+      978
+    ],
+    "masterVisibleRgbPreserved": true,
+    "runtimeWidth": 466,
+    "runtimeHeight": 488
+  },
+  {
+    "key": "fence",
+    "file": "public/art/environment/fence-v1.webp",
+    "masterFile": "docs/art/environment-master/fence-v1.webp",
+    "sourceFile": "exec-53aa8c84-8b91-47e0-80f5-1b2bd6ad69b1.png",
+    "sourceSha256": "2449f99b2404786858525d17605a5255dd3dc3c7a1f8465efce4361e974b8477",
+    "sha256": "e0f488e1e69bfa9803095e1ededc4957e9c7df8c5f39dbfc654320cbd8790340",
+    "width": 2157,
+    "height": 729,
+    "bytes": 15854,
+    "transparentFraction": 0.7435,
+    "alphaBounds": [
+      106,
+      75,
+      2054,
+      629
+    ],
+    "masterVisibleRgbPreserved": true,
+    "runtimeWidth": 488,
+    "runtimeHeight": 145
+  },
+  {
+    "key": "rock",
+    "file": "public/art/environment/rock-v1.webp",
+    "masterFile": "docs/art/environment-master/rock-v1.webp",
+    "sourceFile": "exec-b709b1e7-d40d-4cf8-8d41-6dc64f62ba43.png",
+    "sourceSha256": "a4ab0a987cecf069cc39b27a8b6dcc0c0fc798cb1d4f1827c49a592d886b85d0",
+    "sha256": "bfa89359f00421fa8ec0d07999a910655c844c397e672aa0bf56ef2f2be0ed23",
+    "width": 1159,
+    "height": 1358,
+    "bytes": 49006,
+    "transparentFraction": 0.5654,
+    "alphaBounds": [
+      125,
+      141,
+      1030,
+      1197
+    ],
+    "masterVisibleRgbPreserved": true,
+    "runtimeWidth": 419,
+    "runtimeHeight": 488
+  },
+  {
+    "key": "tree",
+    "file": "public/art/environment/tree-v1.webp",
+    "masterFile": "docs/art/environment-master/tree-v1.webp",
+    "sourceFile": "exec-7aaecd7d-c241-418d-a46e-e64c507a2108.png",
+    "sourceSha256": "93f894c4bd82002766eb9c933d326ba107bfd5a36719743e6d8a9532138e9108",
+    "sha256": "eab2295d70b4330ffd3e4ee0cd2d5c02cedd857c54bc5ce3bc9c7037fa187d98",
+    "width": 1024,
+    "height": 1536,
+    "bytes": 18422,
+    "transparentFraction": 0.8327,
+    "alphaBounds": [
+      221,
+      103,
+      782,
+      1404
+    ],
+    "masterVisibleRgbPreserved": true,
+    "runtimeWidth": 215,
+    "runtimeHeight": 488
+  },
+  {
+    "key": "brazier",
+    "file": "public/art/environment/brazier-v1.webp",
+    "masterFile": "docs/art/environment-master/brazier-v1.webp",
+    "sourceFile": "exec-c39f7d82-53b0-4dbd-adc1-72bb37a04ed9.png",
+    "sourceSha256": "124d8386d63b89b6de7c67b5aacf6e467dd01b3196542f5146721950e70f8b15",
+    "sha256": "4bd3d0443759ceafb965657720c3e74cd3f1962892301aa97a2c364996a3c87d",
+    "width": 1092,
+    "height": 1440,
+    "bytes": 30970,
+    "transparentFraction": 0.8368,
+    "alphaBounds": [
+      333,
+      167,
+      761,
+      1251
+    ],
+    "masterVisibleRgbPreserved": true,
+    "runtimeWidth": 198,
+    "runtimeHeight": 488
+  },
+  {
+    "key": "hearth",
+    "file": "public/art/environment/hearth-v1.webp",
+    "masterFile": "docs/art/environment-master/hearth-v1.webp",
+    "sourceFile": "exec-86087350-fab6-408b-8ab0-5bb434f752a7.png",
+    "sourceSha256": "e1be466e6bd3cc8af7eab19a8830d0c66db3c493b84cd0129013099ef2d45e09",
+    "sha256": "e6a8f2c0603a6c076073156ef41cd9802df1839ac15e6d3787d7f3915fefe561",
+    "width": 1458,
+    "height": 1079,
+    "bytes": 53548,
+    "transparentFraction": 0.3715,
+    "alphaBounds": [
+      97,
+      146,
+      1361,
+      932
+    ],
+    "masterVisibleRgbPreserved": true,
+    "runtimeWidth": 488,
+    "runtimeHeight": 306
+  },
+  {
+    "key": "shelf",
+    "file": "public/art/environment/shelf-v1.webp",
+    "masterFile": "docs/art/environment-master/shelf-v1.webp",
+    "sourceFile": "exec-ef6b02b4-3e3e-4172-99c5-ef1ed0805b42.png",
+    "sourceSha256": "9535f903688218004e61301e61f5d5fabb17db757898ac75419bbca4e40895d7",
+    "sha256": "e31a5ce25a65949691903fda48019263a666828aeeb1e51d6d606c5e8a1dd67f",
+    "width": 1942,
+    "height": 809,
+    "bytes": 23546,
+    "transparentFraction": 0.3557,
+    "alphaBounds": [
+      101,
+      100,
+      1844,
+      682
+    ],
+    "masterVisibleRgbPreserved": true,
+    "runtimeWidth": 488,
+    "runtimeHeight": 168
+  },
+  {
+    "key": "indoor-anvil",
+    "file": "public/art/environment/indoor-anvil-v1.webp",
+    "masterFile": "docs/art/environment-master/indoor-anvil-v1.webp",
+    "sourceFile": "exec-008063f2-a353-4343-b377-274b4e5639b3.png",
+    "sourceSha256": "78b7d350578b3dbdd78a5ab367bd3ab922f1ae0ce92e88c6c243e14295297326",
+    "sha256": "3c8b0f67065eab20edcb4ce4c3324410c2434636d3856e7e881d4fa2529fc1f8",
+    "width": 1619,
+    "height": 971,
+    "bytes": 25306,
+    "transparentFraction": 0.5555,
+    "alphaBounds": [
+      96,
+      153,
+      1524,
+      896
+    ],
+    "masterVisibleRgbPreserved": true,
+    "runtimeWidth": 488,
+    "runtimeHeight": 258
+  },
+  {
+    "key": "ash-ground",
+    "file": "public/art/environment/ash-ground-v1.webp",
+    "masterFile": "docs/art/environment-master/ash-ground-v1.webp",
+    "sourceFile": "exec-b36020a2-cbe8-411a-aa44-8c158e234a38.png",
+    "sourceSha256": "4dbbdfe179530ad6f8d58bc31ac6bbac7b1cb67cf61bdb730b8934f4cef53abd",
+    "sha256": "801f758e0e6727198295e4a0e4cce77413124f03c9e88b17e6ddb2ab8ff2ccd1",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 119464,
+    "transparentFraction": 0.0,
+    "alphaBounds": [
+      0,
+      0,
+      1254,
+      1254
+    ],
+    "masterVisibleRgbPreserved": true,
+    "runtimeWidth": 768,
+    "runtimeHeight": 768
+  },
+  {
+    "key": "stone-path",
+    "file": "public/art/environment/stone-path-v1.webp",
+    "masterFile": "docs/art/environment-master/stone-path-v1.webp",
+    "sourceFile": "exec-3e621327-038b-4f96-94a4-480d9f189aa6.png",
+    "sourceSha256": "222796f504a514f5b9fe967bd95069ccda997bccc8a0564eb7f3ce4936e64e05",
+    "sha256": "7ca344965284aca17c11f16b261ee955c1c089ef417383f39eb4d36e035a108a",
+    "width": 1362,
+    "height": 1155,
+    "bytes": 119068,
+    "transparentFraction": 0.0,
+    "alphaBounds": [
+      0,
+      0,
+      1362,
+      1155
+    ],
+    "masterVisibleRgbPreserved": true,
+    "runtimeWidth": 768,
+    "runtimeHeight": 651
+  }
+]

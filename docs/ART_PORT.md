@@ -1,6 +1,6 @@
 # Hand-drawn presentation for Tilth
 
-10 September 2026. Architecture review of the local integration branch at `a4c1a90`. The full port remains a proposal. A subsequent [playable illustrated inn](ART_STUDY.md) now demonstrates a bounded portion. Hayden asked whether Notebook World's drawing style can transfer while retaining Tilth's other elements.
+10 September 2026. Original architecture review at `a4c1a90`, followed by the [playable illustrated inn](ART_STUDY.md) and now the [Cinderwatch environment pass](ENVIRONMENT_ART.md). The original map's buildings, props and all three interiors now have prepared ink scenery. Character customization, combat creatures and future generated regions retain their existing rendering. The remaining architecture notes below are a roadmap, not claims of completed full coverage.
 
 ## Recommendation
 

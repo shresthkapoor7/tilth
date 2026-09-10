@@ -11,7 +11,7 @@ export function selectsInkAvatar(profile,selection='auto'){return selection==='d
 export function orderedInterior(room,playerY){return [...furnishings[room].map((f,i)=>({kind:'prop',index:i,depth:furniturePlacement(f).depth})),{kind:'player',depth:playerY+13}].sort((a,b)=>a.depth-b.depth)}
 export function studyMovement(directions,dt){const x=Number(directions.has('right'))-Number(directions.has('left')),y=Number(directions.has('down'))-Number(directions.has('up'));const length=Math.hypot(x,y)||1,step=Math.min(50,Math.max(0,dt))*.145;return{x:x/length*step,y:y/length*step}}
 export function walkFrame(distance,moving,turnRemaining=0,reduced=false){return reduced?7:turnRemaining>55?6:turnRemaining>0?7:moving?Math.floor(distance/8)%6:7}
-function cropAlpha(image,sx=0,sy=0,sw=image.width,sh=image.height){
+export function cropAlpha(image,sx=0,sy=0,sw=image.width,sh=image.height){
  const scan=document.createElement('canvas');scan.width=Math.ceil(sw);scan.height=Math.ceil(sh);const c=scan.getContext('2d',{willReadFrequently:true});c.drawImage(image,sx,sy,sw,sh,0,0,scan.width,scan.height);
  const data=c.getImageData(0,0,scan.width,scan.height).data;let left=scan.width,top=scan.height,right=-1,bottom=-1,transparent=0;
  for(let y=0;y<scan.height;y++)for(let x=0;x<scan.width;x++){const a=data[(y*scan.width+x)*4+3];if(a<8)transparent++;if(a>160){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y)}}
@@ -21,7 +21,7 @@ function blit(c,asset,x,y,w,h,crop=asset.crop){c.drawImage(asset.image,crop.sx,c
 function stroke(c,points,color='#252d28',width=1.4){c.strokeStyle=color;c.lineWidth=width;c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke()}
 
 // Same construction and palette as interiors.js; linework is cached once.
-function drawInkShell(b){
+export function drawInkShell(b){
  const rect=(x,y,w,h,color)=>{b.fillStyle=color;b.fillRect(x,y,w,h)};
  rect(0,0,800,600,'#111c20');rect(211,149,379,303,'#594934');
  b.save();b.beginPath();b.rect(211,149,379,303);b.clip();

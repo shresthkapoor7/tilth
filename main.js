@@ -1,4 +1,5 @@
 import {createInkStudy,studyMovement} from './engine/ink-study.js';
+import {createEnvironmentArt} from './engine/ink-environment.js';
 import {installOnboarding} from './engine/onboarding.js';
 import {WEAPONS,characterContent,weaponMove} from './content/characters.js';
 import {installDialogue} from './engine/dialogue-ui.js';
@@ -31,6 +32,7 @@ const activeDuration=()=>actionDefinition(attackKind).duration;
 let facing='down', walkingUntil=0, currentRoom=null, returnPoint=null;
 const studyRequested=new URLSearchParams(location.search).get('art')==='ink',heldDirections=new Set();let studyLaunched=false;
 const inkStudy=createInkStudy({onChange:()=>draw(),onEnter:()=>openInkStudy(),getProfile:()=>characterContent(runtime.state.profile)});
+const environmentArt=createEnvironmentArt({onChange:()=>draw()});
 window.addEventListener('keyup',e=>{const dir={w:'up',ArrowUp:'up',s:'down',ArrowDown:'down',a:'left',ArrowLeft:'left',d:'right',ArrowRight:'right'}[e.key];heldDirections.delete(dir)});
 window.addEventListener('blur',()=>heldDirections.clear());document.addEventListener('visibilitychange',()=>heldDirections.clear());
 const roomCanvas=document.createElement('canvas');roomCanvas.width=800;roomCanvas.height=600;
@@ -50,19 +52,19 @@ function sprite(c,x,y,color=colors[heroClass],scale=1,name){
 }
 
 const bg=document.createElement('canvas');bg.width=800;bg.height=600;const b=bg.getContext('2d');
-function landscape(){drawVolcanic(b)}
+function landscape(){environmentArt.setLayout(drawVolcanic(b))}
 landscape();
 function draw(){
- const studyRoom=currentRoom==='inn';inkStudy.setRoom(currentRoom);
+ const studyRoom=currentRoom==='inn';inkStudy.setRoom(currentRoom);environmentArt.setRoom(currentRoom);
  canvas.style.objectPosition=`${player.x/800*100}% ${player.y/600*100}%`;
  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);
  ctx.setTransform(studyRoom?3:2,0,0,studyRoom?3:2,studyRoom?-400:0,studyRoom?-240:0);
- ctx.imageSmoothingEnabled=inkStudy.active;
+ ctx.imageSmoothingEnabled=inkStudy.active||environmentArt.active;
  const originalPlayer=()=>sprite(ctx,player.x,player.y,gear==='Emberweave cloak'?'#b26943':colors[heroClass],1.2,'Evergreen');
  if(inkStudy.active){
   const now=performance.now();inkStudy.drawRoom(ctx,{...player,facing,moving:now<walkingUntil,time:now,attack:now-attackStart<activeDuration()?(now-attackStart)/activeDuration():undefined,kind:attackKind,weapon:runtime.state.profile.weapon||'sword',reduced:matchMedia('(prefers-reduced-motion: reduce)').matches},originalPlayer,()=>{const custom=runtime.state.profile.onboarded?characterContent(runtime.state.profile):undefined;if(custom)drawAttachment(ctx,player.x,player.y,1.2,{appearance:custom.characterArt});drawAttachment(ctx,player.x,player.y,1.2,runtime.activeOffer()?.content)});
  }else{
-  ctx.drawImage(currentRoom?roomCanvas:bg,0,0);
+  if(!environmentArt.draw(ctx,currentRoom))ctx.drawImage(currentRoom?roomCanvas:bg,0,0);
   if(!currentRoom){sprite(ctx,290,315,'#507f9b',1,'Lunara');sprite(ctx,536,354,'#c6bca0',1,'Clover');sprite(ctx,215,369,'#9b6b3e',1,'Foxglove');drawHero(ctx,rowan.x,rowan.y,'#96815b',1,undefined,false,{direction:'down',walking:performance.now()<rowanWalkingUntil});pixelText(ctx,'!',rowan.x,rowan.y-31,'#ffec98',23)}
   originalPlayer();
  }
