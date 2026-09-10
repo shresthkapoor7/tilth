@@ -10,20 +10,48 @@
    <label for="playerName">YOUR NAME</label><input id="playerName" maxlength="24" required placeholder="A name for the tale…" autocomplete="nickname">
    <fieldset><legend>YOUR CALLING</legend><div id="classChoices"></div></fieldset>
    <div class="seat-preview"><canvas id="seatPreview" width="140" height="110" aria-label="Your character"></canvas><p id="classDescription"></p></div>
-   <label for="campaignWish">THE ADVENTURE YOU WANT</label><textarea id="campaignWish" maxlength="600" rows="2" placeholder="A frostbound castle, a stolen relic, and a dragon who can be reasoned with…"></textarea>
+   <label for="campaignWish">THE ADVENTURE YOU WANT</label><textarea id="campaignWish" maxlength="600" rows="2" placeholder="A quiet mountain village, a missing traveler, and a mystery in the woods…"></textarea>
    <button class="primary" type="submit">Create a room</button>
    <div class="join-row"><input id="roomCode" aria-label="Six-character room code" maxlength="6" placeholder="ROOM CODE" autocomplete="off"><button id="joinRoom" type="button">Join party</button></div>
   </form>
   <p id="lobbyError" role="status"></p><a href="/solo.html">Visit the solo world →</a>
  </section>
  <div id="gameHud" hidden>
-  <header class="table-header panel"><div><span class="eyebrow" id="chapterLabel">THE PARTY IS GATHERING</span><h1 id="sceneTitle">Around the fire</h1></div><button id="roomMenuButton" aria-label="Open room and party menu">ROOM <span id="roomCodeLabel"></span> ☰</button></header>
-  <div id="partyStrip" class="panel" aria-label="Party health and turns"></div>
-  <div id="objective" class="panel"></div>
-  <section id="chronicle" class="panel" aria-label="Dungeon master and party conversation"><div class="chronicle-heading"><span>DUNGEON MASTER</span><button id="toggleChronicle" aria-expanded="true">▾</button></div><div id="storyLog" role="log" aria-live="polite" aria-relevant="additions"></div><form id="chatForm"><input id="chatInput" aria-label="Message your party" maxlength="300" placeholder="Say something to your party…"><button aria-label="Send party message">↵</button></form></section>
-  <section id="actionPanel" class="panel" aria-label="Your turn"><div id="turnLabel"></div><div class="actions"><button data-action="attack">⚔ Attack</button><button data-action="heal">✚ Heal</button><button data-action="guard">▣ Guard</button><button data-action="interact">◇ Inspect</button><button data-action="move">↟ Move</button><button data-action="end">End turn →</button></div><div id="targetRow"><select id="targetPicker" aria-label="Choose an action target"></select><button id="targetAction">Act →</button></div><div id="movePad" hidden><button data-step="0,-20" aria-label="Move north">↑</button><button data-step="-20,0" aria-label="Move west">←</button><button data-step="0,20" aria-label="Move south">↓</button><button data-step="20,0" aria-label="Move east">→</button></div><p id="actionHint">Choose an action, then a target on the map.</p><form id="improviseForm"><input id="actionIdea" maxlength="300" aria-label="Describe an improvised action" placeholder="I try to distract the dragon with a song…"><button id="improviseButton">Try it ↵</button></form><div id="suggestions"></div></section>
+  <header class="table-header">
+   <div class="location panel"><span class="eyebrow" id="chapterLabel">THE PARTY IS GATHERING</span><h1 id="sceneTitle">Around the fire</h1><p id="objective"></p></div>
+   <nav class="menu-buttons" aria-label="Game menus"><button id="journalButton">▤ Journal <kbd>J</kbd></button><button id="roomMenuButton">☰ Menu <kbd>Esc</kbd></button></nav>
+  </header>
+  <div id="partyStrip" class="panel" aria-label="Party journals and health"></div>
+  <button id="storyButton" class="panel story-peek" aria-label="Read the dungeon master's chronicle"><span class="eyebrow">DUNGEON MASTER <kbd>C</kbd></span><span id="latestStory">The tale is about to begin.</span><span class="read-story">Read chronicle ▸</span></button>
+  <section id="actionDock" aria-label="Your turn">
+   <div class="turn-strip"><span id="turnLabel"></span><span id="movementLabel" aria-label="Movement remaining"></span></div>
+   <div class="panel hotbar"><div id="actionButtons" class="actions"></div><button id="endTurn">End turn <span>↵</span></button></div>
+  </section>
+  <section id="actionPanel" class="panel" aria-labelledby="actionTitle" hidden>
+   <div class="dialog-heading"><h2 id="actionTitle">Attack</h2><button id="closeAction" aria-label="Close action selection">✕</button></div>
+   <p id="actionHint"></p>
+   <div id="residentConversation" hidden><p id="residentGreeting"></p><div id="residentRequests"></div><button id="askResident">Ask something…</button></div>
+   <div id="targetRow"><select id="targetPicker" aria-label="Choose an action target"></select><button id="targetAction" class="primary">Ready action →</button></div>
+   <div id="movePad" hidden><button data-step="0,-20" aria-label="Move north">↑</button><button data-step="-20,0" aria-label="Move west">←</button><button data-step="0,20" aria-label="Move south">↓</button><button data-step="20,0" aria-label="Move east">→</button></div>
+   <form id="improviseForm" hidden><label for="actionIdea">WHAT DO YOU TRY?</label><textarea id="actionIdea" maxlength="300" rows="2" placeholder="I distract the dragon with a song…"></textarea><div id="suggestions"></div><button id="improviseButton" class="primary">Ready my action →</button></form>
+  </section>
+  <button id="nearbyTalk" hidden>Talk <kbd>F</kbd></button>
   <div id="tableStatus" class="panel" role="status"></div>
  </div>
+ <dialog id="chronicle" aria-labelledby="chronicleTitle"><div class="dialog-heading"><div><span class="eyebrow">THE STORY SO FAR</span><h2 id="chronicleTitle">Around the table</h2></div><button id="closeChronicle" aria-label="Close chronicle">✕</button></div><div id="storyLog" role="log" aria-live="polite" aria-relevant="additions"></div><form id="chatForm"><input id="chatInput" aria-label="Message your party" maxlength="300" placeholder="Say something to your party…"><button aria-label="Send party message">↵</button></form></dialog>
+ <dialog id="journalDialog" aria-labelledby="journalTitle">
+  <div class="dialog-heading"><div><span class="eyebrow">A TRAVELER’S JOURNAL</span><h2 id="journalTitle">Your journey</h2></div><button id="closeJournal" aria-label="Close journal">✕</button></div>
+  <nav id="journalPlayers" aria-label="Choose a player's journal"></nav>
+  <div class="journal-profile"><canvas id="journalPortrait" width="140" height="110" aria-label="Character portrait"></canvas><div><p id="journalClass"></p><p id="journalStats"></p><p id="journalTurn"></p></div></div>
+  <nav class="journal-tabs" aria-label="Journal sections"><button data-page="moves" aria-pressed="true">Possible moves</button><button data-page="quests" aria-pressed="false">Party quests</button><button data-page="history" aria-pressed="false">My journey</button></nav>
+  <div id="journalContent"></div>
+ </dialog>
+ <dialog id="diceDialog" aria-labelledby="diceTitle">
+  <button id="closeDice" aria-label="Close dice tray">✕</button><span class="eyebrow" id="diceEyebrow">YOUR ACTION</span><h2 id="diceTitle">Roll your fate.</h2>
+  <div class="die" aria-hidden="true"><svg viewBox="0 0 200 220"><path class="die-body" d="M100 8 184 56 184 158 100 208 16 158 16 56Z"/><path class="die-facets" d="M100 8 55 77 16 56M100 8 145 77 184 56M55 77 145 77 166 144 100 182 34 144ZM55 77 34 144 16 158M145 77 166 144 184 158M34 144 100 208 166 144M100 182 100 208"/></svg><span id="diceNumber">20</span></div>
+  <div id="diceResult" role="status" aria-live="polite"><p id="diceMath"></p><h3 id="diceOutcome">Choose your moment.</h3><p id="diceDetail"></p><p id="diceNarration"></p></div>
+  <button id="rollDice" class="primary">Roll d20</button><button id="continueDice" hidden>Return to the adventure</button>
+ </dialog>
  <dialog id="roomDialog" aria-labelledby="roomTitle"><div class="dialog-heading"><h2 id="roomTitle">Your table</h2><button id="closeRoom" aria-label="Close room menu">✕</button></div><p id="roomSummary"></p><button id="copyInvite">Copy invite link</button><button id="startAdventure" class="primary">Begin the adventure</button><p id="roomHelp"></p><button id="leaveRoom">Leave table</button></dialog>
 </main><script type="module" src="/dungeon/main.js"></script>
 </body></html>

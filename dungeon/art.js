@@ -1,6 +1,6 @@
 import {drawHero} from '../volcanic.js';
 import {characterContent} from '../content/characters.js';
-import {drawRegion} from '../engine/region-art.js';
+import {drawScenery,drawWilderness} from './scenery.js';
 import {regionGrid} from '../engine/regions.js';
 import {sceneTerrain} from './world.js';
 const rect=(c,x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(Math.round(x),Math.round(y),w,h)};
@@ -30,10 +30,19 @@ export function hero(c,p,now,active,effect){
  if(p.hp<=0)c.globalAlpha=.35;
  drawHero(c,p.x,p.y,p.color,1.3,'',false,{role:p.heroClass,walking:p.walking,direction:effect&&effect.to.x<p.x?'left':'right',custom:{...characterContent({heroClass:p.heroClass}),weapon:p.weapon,outfitColor:p.color,clothing:p.heroClass==='Mage'||p.heroClass==='Healer'?'Robe':'Coat'},kind:effect?.kind==='heal'?'Spin':'Heavy',attack:attacking?elapsed:undefined});c.globalAlpha=1;text(c,p.name,p.x,p.y-43,active?'#ffdc8d':'#d4dbc2');if(p.guard)text(c,'▣',p.x+25,p.y,'#8fced2',21);
 }
-export function background(scene){const c=document.createElement('canvas');c.width=800;c.height=600;const terrain=sceneTerrain(scene);drawRegion(c.getContext('2d'),terrain,regionGrid(terrain));return c;}
+export function background(scene){const c=document.createElement('canvas');c.width=1600;c.height=1400;const ctx=c.getContext('2d');ctx.translate(400,400);drawWilderness(ctx,scene.theme,scene.seed);const terrain=sceneTerrain(scene);c.layers=drawScenery(ctx,terrain,regionGrid(terrain));return c;}
 export function effect(c,e,now,reduced){const t=(now-e.localTime)/900;if(t<0||t>1)return;const {from,to}=e;c.save();c.globalAlpha=1-t;
  if(e.kind==='fire'){
   for(let i=0;i<18;i++){const progress=i/18,x=from.x+(to.x-from.x)*progress,y=from.y+(to.y-from.y)*progress;rect(c,x+Math.sin(i*3+now/80)*progress*17,y-15+Math.cos(i*2)*progress*15,7+progress*9,5+progress*7,i%2?'#f0b556':'#d76836')}
  }else if(e.kind==='attack'){c.strokeStyle='#f4d4a0';c.lineWidth=3;c.beginPath();c.moveTo(from.x,from.y-12);c.lineTo(to.x,to.y-12);c.stroke();for(let i=0;i<8;i++){const a=i*Math.PI/4;rect(c,to.x+Math.cos(a)*t*28,to.y-10+Math.sin(a)*t*28,3,3,'#e8ad61')}}
  else {c.strokeStyle=e.kind==='heal'?'#94d4bb':'#e5cc89';c.lineWidth=2;c.beginPath();c.ellipse(to.x,to.y,15+t*24,8+t*14,0,0,Math.PI*2);c.stroke()}
  text(c,e.kind==='miss'?'MISS':e.amount?`${e.kind==='heal'?'+':'−'}${e.amount}`:'✦',to.x,to.y-30-(reduced?0:t*30),e.kind==='heal'?'#a6e6be':'#ffe0a5',22);c.restore();}
+
+export function resident(c,n,quests,now){
+ const i=Number(n.id.split('-').at(-1))||0;
+ drawHero(c,n.x,n.y,n.color,1.35,'',false,{unarmed:true,direction:'down',role:'Healer',custom:{...characterContent({heroClass:'Healer'}),outfitColor:n.color,clothing:i===1?'Robe':'Tunic',hairStyle:['Swept','Braid','Curls'][i%3],hairColor:['#aa9472','#6c4831','#bbc1a6'][i%3]}});
+ text(c,n.name,n.x,n.y-43,'#f2deb0',13);
+ const ready=quests.some(q=>(q.giverId===n.id&&q.status==='ready')||(q.recipientId===n.id&&q.kind==='delivery'&&q.status==='active'));
+ const offered=quests.some(q=>q.giverId===n.id&&q.status==='offered');
+ if(ready||offered)text(c,ready?'?':'!',n.x,n.y-59,ready?'#bbd58d':'#f1c871',20);
+}

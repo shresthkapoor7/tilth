@@ -3,7 +3,7 @@ export function regionLife(content){
  const seed=regionSeed(content),sockets=[{x:8,y:8},{x:30,y:8},{x:8,y:22},{x:30,y:22},{x:7,y:15},{x:33,y:15}];
  sockets.sort((a,b)=>Math.min(...content.landmarks.map(m=>Math.hypot(b.x-m.x,b.y-m.y)))-Math.min(...content.landmarks.map(m=>Math.hypot(a.x-m.x,a.y-m.y))));
  const homes=content.houses||[{name:'Wayfarer Refuge',kind:'home',resident:'Mara',greeting:'The roads are no longer safe. Will you help us?',request:'Defeat the patrols outside, then return to me.',thanks:'The roads are safe again. You have earned your rest.'}];
- const houses=homes.map((h,i)=>({...h,id:`house-${i}`,...sockets[i],door:{x:sockets[i].x*20+10,y:sockets[i].y*20+54}}));
+ const houses=homes.map((h,i)=>{const slot=content.houseSockets?.[i]||sockets[i];return {...h,id:`house-${i}`,...slot,door:{x:slot.x*20+10,y:slot.y*20+54}}});
  const spots=[{x:13,y:10},{x:26,y:12},{x:12,y:19},{x:25,y:23},{x:20,y:7}];
  const specs=content.enemies||Array.from({length:3},(_,i)=>({name:['Road Reaver','Ruin Sentinel','Ash Hexer'][i],kind:['raider','sentry','mage'][i],hp:[70,100,80][i],color:['#a65639','#827348','#5a8490'][i],taunt:'These roads are ours. Turn back!'}));
  const enemies=specs.map((e,i)=>({...e,...spots[(i+seed%spots.length)%spots.length],id:`foe-${i}`}));

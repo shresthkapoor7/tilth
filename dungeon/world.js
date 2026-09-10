@@ -1,13 +1,25 @@
 import {regionGrid,standInRegion} from '../engine/regions.js';
 import {regionLife} from '../engine/region-life.js';
 export function sceneTerrain(scene){
- return {name:scene.title,theme:scene.theme,layout:scene.layout,seed:scene.seed,accent:scene.theme==='volcanic'?'#e9ab65':'#bbcda0',houses:[],patches:[],landmarks:scene.landmarks.map((m,i)=>({...m,...[{x:10,y:8},{x:30,y:10},{x:22,y:23}][i]})),enemies:scene.enemies.map(e=>({...e,kind:'raider'}))};
+ return {name:scene.title,theme:scene.theme,layout:scene.layout,seed:scene.seed,accent:scene.theme==='volcanic'?'#e9ab65':'#bbcda0',houses:(scene.residents||[]).map(n=>({name:n.home,resident:n.name,kind:'home'})),houseSockets:scene.residents?.length?[{x:8,y:9},{x:30,y:9},{x:scene.seed%2?30:8,y:22}]:undefined,patches:[],landmarks:scene.landmarks.map((m,i)=>({...m,...(scene.residents?.length?[{x:20,y:14},{x:24,y:21},{x:14,y:21}]:[{x:10,y:8},{x:30,y:10},{x:22,y:23}])[i]})),enemies:scene.enemies.map(e=>({...e,kind:'raider'}))};
 }
-export function buildScene(scene,partySize){
+export function buildScene(scene,partySize,{chapter=1}={}){
+ if(scene.residents?.length)scene={...scene,enemies:chapter===1?[]:scene.enemies.filter(e=>chapter>=3||e.kind!=='dragon')};
  const terrain=sceneTerrain(scene),grid=regionGrid(terrain),spots=regionLife(terrain).enemies;
  const creatures=scene.enemies.map((e,i)=>({...e,id:`enemy-${i}`,x:spots[i].x*20+10,y:spots[i].y*20,maxHp:(e.kind==='dragon'?38:e.kind==='slime'?14:20)+partySize*5,hp:(e.kind==='dragon'?38:e.kind==='slime'?14:20)+partySize*5,armor:e.kind==='dragon'?14:11}));
  const props=terrain.landmarks.map((m,i)=>({...m,id:`relic-${i}`,x:m.x*20+10,y:m.y*20,secured:false}));
- return {scene:{...scene,creatures,props},grid};
+ const homes=regionLife(terrain).houses;
+ const residents=(scene.residents||[]).map((n,i)=>({...n,id:`resident-${i}`,...nearestOpen(grid,{x:homes[i].door.x+30,y:homes[i].door.y+16})}));
+ const questSpots=[...residents,...props];
+ const quests=(scene.quests||[]).map((q,i)=>{
+  const giver=Math.min(residents.length-1,q.giver),recipient=q.recipient===giver?(giver+1)%residents.length:Math.min(residents.length-1,q.recipient);
+  const landmark=props[q.landmark%props.length];
+  const position=nearestOpen(grid,{x:landmark.x+38,y:landmark.y+40},questSpots);questSpots.push(position);
+  return {...q,id:`quest-${i}`,giverId:residents[giver].id,recipientId:residents[recipient].id,place:landmark.name,status:'offered',...position};
+ });
+ for(const q of quests)if(q.kind!=='delivery')props.push({id:`task-${q.id}`,questId:q.id,name:q.item,kind:q.kind==='clear'?'debris':'clue',x:q.x,y:q.y,secured:false});
+ if(residents.length){const arrival=residents[0];for(const c of creatures){Object.assign(c,nearestOpen(grid,{x:arrival.x<400?650:150,y:arrival.y<300?470:110},[...residents,...props,...creatures.filter(v=>v!==c)]));}}
+ return {scene:{...scene,creatures,props,residents,quests,homes,adventure:residents.length>0},grid};
 }
 export function nearestOpen(grid,point,occupied=[]){
  let best=null,score=Infinity;for(let y=2;y<28;y++)for(let x=2;x<38;x++){const p={x:x*20+10,y:y*20},d=Math.hypot(p.x-point.x,p.y-point.y);if(d<score&&standInRegion(grid,p.x,p.y)&&!occupied.some(o=>Math.hypot(o.x-p.x,o.y-p.y)<25)){score=d;best=p}}return best||{x:410,y:320};

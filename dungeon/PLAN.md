@@ -21,3 +21,24 @@ Rooms are held in one server process for this version. Reloading a browser resto
 - Existing solo checks plus multiplayer tests: 91 passing. Both frontend entry points build successfully.
 
 Run `npm run dev`, create a room at `/`, then join from another browser/tab before the host starts. The branch is local until explicitly pushed.
+
+
+## Dice and journal polish
+
+- Return to the solo world’s brass-framed menus and compact action bar; keep chat and long narration in an on-demand chronicle.
+- Add an explicit foreground d20 action confirmation, synchronized server results, and an automatic guard result.
+- Add player journals for class moves, current resources, reachable targets, and each player’s own resolved actions.
+- Describe movement in steps, with a clear next action when movement is exhausted.
+- Verify duplicate actions, invalid rulings, history ownership, two-client results, keyboard operation, and small-screen layouts.
+
+Validation: 95 tests and the production build pass. Browser checks exercised four-player desktop/mobile HUDs, cancellation before rolling, a shared natural-20 result, separate histories, journal shortcuts and landscape layouts without browser errors. A live two-player Astra encounter also produced the same d20 4 + 4 versus armor 14 miss on both clients and recorded the generated narration in the acting player's journal.
+
+
+## Exploration and world graphics correction
+
+- Opening scenes now have three generated residents, named homes and accepted delivery/clearing/investigation requests. The first chapter has no enemies; dragons belong to chapter three.
+- Exploration permits every player to move without combat initiative. Nearby threats or an attack begin combat; defeating them restores exploration.
+- Early chapters advance through completed requests. Delivery checks the correct recipient and return; clearing removes a collidable object after a successful check.
+- Replace sparse environment art with detailed houses, tiled roofs, windows, rich foliage, stonework and readable props. Sort sprites and scenery by depth and fade foliage around characters.
+- Put actions and dice beside the map and focus the camera inside the remaining clear space. Shrink the persistent HUD and keep longer text in requested panels.
+- Validation: 101 tests pass, including reachability for all 20 theme/layout pairs. Two-browser checks covered shared requests and d20 clearing; a live Astra call produced Fernbell Village with three distinct noncombat requests and no enemies. The production build passes.

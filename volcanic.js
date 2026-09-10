@@ -80,7 +80,8 @@ export function drawHero(c,x,y,color,scale=1,name='',blade=false,pose={}){
   if(custom.clothing==='Tunic'){R(c,-5,-6,10,7,color);R(c,-5,-1,10,2,'#ac8959')}
  }
  // Weapons distinguish classes at a glance; the sword is angled away from the body.
- if(!attacking&&custom&&drawHeldWeapon(c,custom.weapon)){}
+ if(pose.unarmed){}
+ else if(!attacking&&custom&&drawHeldWeapon(c,custom.weapon)){}
  else if(!attacking&&!custom&&(role==='Mage'||role==='Healer')){R(c,11,-23,2,34,'#815d3a');R(c,11,-22,1,32,'#c29c64');R(c,9,-27,6,5,'#263c40');R(c,10,-29,4,7,role==='Mage'?'#80ccd4':'#d9df9b');R(c,11,-28,2,3,'#f3ebc9');if(role==='Healer')R(c,7,-25,10,2,'#d7bd78')}
  else if(!attacking){for(let i=0;i<17;i++){R(c,12+Math.floor(i/4),2-i+stride,2,2,blade?'#ffe2a0':'#aabcb8');R(c,13+Math.floor(i/4),2-i+stride,1,1,'#eef0d1')}R(c,10,3+stride,7,2,'#c89b57');R(c,12,5+stride,2,5,'#765038')}
  if(back){poly(c,[[-5,-17],[4,-17],[6+stride,5],[0,8],[-7+stride,5]],color);R(c,-4,-15,1,14,'#ce9f63');R(c,2,-13,1,15,'#26343a')}
