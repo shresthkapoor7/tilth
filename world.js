@@ -1,3 +1,6 @@
+import {standInRegion} from './engine/regions.js';
+let activeTerrain=null;
+export function setRegionTerrain(grid){activeTerrain=grid}
 import {HOUSES} from './content/game-config.js';
 export const houses=HOUSES;
 export const magmaBank = [[610,0],[800,0],[800,600],[615,600],[586,548],[575,464],[593,414],[568,370],[597,332],[634,287],[631,221],[658,176],[632,115]];
@@ -12,6 +15,7 @@ export const furnishings={
 };
 export function canStand(x,y,room=null){
  if(room){if(x<223||x>577||y+7<164||y+14>440)return false;return !furnishings[room].some(r=>overlaps(x,y,r))}
+ if(activeTerrain)return standInRegion(activeTerrain,x,y);
  if(x<35||x>765||y<76||y>568)return false;
  // Only the deck is safe. Keep a foot-sized margin inside its railings.
  const bridge=x-6>=566&&x+6<=719&&y+7>=460&&y+14<=508;
