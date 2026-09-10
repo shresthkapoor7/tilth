@@ -34,7 +34,7 @@ Do not expand the battle system, regenerate the world, migrate to 3D, or merge b
 
 ## How the team can take this change
 
-This branch descends directly from Tilth's `d40bf09`. The teammate can fetch the branch from the public Notebook World remote and cherry-pick the integration commit onto their current Tilth branch. This imports only the integration diff. If main has advanced, resolve the small adapter changes in `main.js`, `engine/runtime.js`, and `index.html`; the new modules are separate files. Do not merge unrelated Notebook World main history with `--allow-unrelated-histories`.
+This branch descends directly from Tilth's `d40bf09` and is published directly to [shresthkapoor7/tilth, branch codex/tilth-integration](https://github.com/shresthkapoor7/tilth/tree/codex/tilth-integration). The teammate can fetch that branch and cherry-pick feature commit `350219b` onto their current Tilth branch. This imports only the integration diff. If main has advanced, resolve the small adapter changes in `main.js`, `engine/runtime.js`, and `index.html`; the new modules are separate files. Do not merge unrelated Notebook World main history with `--allow-unrelated-histories`.
 
 Keep the Notebook World implementation checkpoint available until all desired features are ported. Teammate main has not been pushed to or modified by this task.
 
@@ -42,7 +42,13 @@ Keep the Notebook World implementation checkpoint available until all desired fe
 
 All 41 tests pass: the 35 existing Tilth tests plus six integration tests covering witnessed/distant/indoor actions, causal references, deduplication, saved memories, and Rowan's route through the actual rendered fence geometry. The quest marker follows Rowan's current position.
 
-Browser checks passed on the local game: fresh-start thought; reveal/advance/focus; walk to Rowan; execute Slash → Slash → Heavy through the normal controls; observe his completed retreat and reaction; reopen conversation and see the memory callback; reload and retain the changed behavior; continue into Tilth's existing quest UI. No browser errors were recorded. The provider correctly reports that AI generation is not connected. Mobile-specific visual verification has not been performed on this integration.
+Browser checks passed on the local game: fresh-start thought; reveal/advance/focus; walk to Rowan; execute Slash → Slash → Heavy through the normal controls; observe his completed retreat and reaction; reopen conversation and see the memory callback; reload and retain the changed behavior; continue into Tilth's existing quest UI. No browser errors were recorded during that initial walkthrough. Mobile-specific visual verification has not been performed on this integration.
+
+The local server is now configured with a server-only key in ignored `.env` and `OPENAI_MODEL=gpt-5.6-terra`. Credentials remain local and are not included in this branch. Each other checkout needs its own server environment; a Git pull does not configure credentials.
+
+Live verification on 10 September 2026: Rowan generated **Rowan’s Ember Test**, with objectives to visit Cinderwatch Smithy and perform Cinder Cleave. Both were accepted and completed through normal browser controls, and the quest screen recorded both checkmarks and `complete`. The automatic follow-up **Ashes in Motion** arrived with different objectives: visit The Ember Rest and perform Ash Cyclone. One earlier attempt encountered the server's busy response; the explicit Retry generation control recovered. No generation-latency benchmark is claimed.
+
+Quest mechanics currently track room visits and combo execution after acceptance. They do not enforce generated prose about doing a combo in a particular room or completing objectives in a particular order. Combat damage, item delivery, dialogue choices and notebook-law objectives are not part of this quest contract yet.
 
 Normal setup remains `npm ci`, `npm test`, `npm run dev`, `npm run build`.
 
@@ -51,4 +57,4 @@ On the current Windows host, the esbuild subprocess fails with `spawn UNKNOWN`. 
     node node_modules/vite/bin/vite.js --configLoader native --host 127.0.0.1 --port 5174 --strictPort
     node node_modules/vite/bin/vite.js build --configLoader native --minify false --target esnext
 
-The development dependency scan reports the same esbuild limitation; this project has no client package imports that need prebundling. This is a host workaround, not a claim that the default build command passed. No live provider calls or public deployment have been validated.
+The development dependency scan reports the same esbuild limitation; this project has no client package imports that need prebundling. This is a host workaround, not a claim that the default build command passed. Live quest generation is verified above; public deployment has not been validated.
