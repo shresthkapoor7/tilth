@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {furnishings,advance,exitAt} from '../world.js';
-import {furniturePlacement,orderedInterior,studyMovement,walkFrame,supportsInkAvatar} from './ink-study.js';
+import {furniturePlacement,orderedInterior,studyMovement,walkFrame,supportsInkAvatar,selectsInkAvatar} from './ink-study.js';
 import {DEFAULT_CHARACTER} from '../content/characters.js';
 
 test('illustrated furniture keeps the existing footprint width and ground contact',()=>{
@@ -31,4 +31,13 @@ test('the prepared avatar cannot conceal unsupported character editor choices',(
  assert.equal(supportsInkAvatar({...DEFAULT_CHARACTER,name:'Ember',weapon:'bow'}),true);
  for(const change of [{hairStyle:'Braid'},{hairColor:'#302d2b'},{skinColor:'#774d3d'},{clothing:'Armor'},{outfitColor:'#497985'}])assert.equal(supportsInkAvatar({...DEFAULT_CHARACTER,...change}),false);
  assert.equal(supportsInkAvatar(undefined),false);
+});
+test('explicit drawn preview is available for any saved appearance without changing the profile',()=>{
+ const profile=Object.freeze({...DEFAULT_CHARACTER,hairStyle:'Braid',hairColor:'#302d2b'});
+ assert.equal(selectsInkAvatar(profile),false);
+ assert.equal(selectsInkAvatar(profile,'drawn'),true);
+ assert.equal(selectsInkAvatar(profile,'pixel'),false);
+ assert.equal(selectsInkAvatar(DEFAULT_CHARACTER),true);
+ assert.equal(selectsInkAvatar(DEFAULT_CHARACTER,'pixel'),false);
+ assert.equal(profile.hairStyle,'Braid');assert.equal(profile.hairColor,'#302d2b');
 });

@@ -6,7 +6,7 @@ Decision proposal, 10 September 2026. The current inn proof has one complete dra
 
 Tilth already stores `hairStyle`, `hairColor`, `skinColor`, `clothing`, `outfitColor`, `weapon` and custom `characterArt`. Those fields should select parts and palettes in the renderer. No generated image URL belongs in the saved character profile. A color or hairstyle change must appear immediately, without a model request.
 
-The proof only substitutes its complete avatar when all five covered appearance fields match the reference: Swept hair, brown `#705039`, skin `#e4b47e`, Coat, copper `#a85b37`. Names and weapons can vary because the original weapon renderer remains separate. Other appearance choices automatically use the existing pixel character, including in dialogue. This prevents a drawing from silently concealing an editor change.
+The proof only substitutes its complete avatar when all five covered appearance fields match the reference: Swept hair, brown `#705039`, skin `#e4b47e`, Coat, copper `#a85b37`. Names and weapons can vary because the original weapon renderer remains separate. Other appearance choices automatically use the existing pixel character, including in dialogue. Saving the editor resets to that faithful automatic selection. In the art study, explicit Drawn character and Pixel character buttons also let any profile compare the prepared sample. An unsupported drawn preview is labeled as the brown-haired, copper-coat sample and never writes profile fields. This keeps editor changes visible while making the proof accessible without disabling its controls.
 
 ## Produce parts against a master pose set
 

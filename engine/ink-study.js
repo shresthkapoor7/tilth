@@ -2,10 +2,12 @@ import {furnishings} from '../world.js';
 import {attackPose} from './attack-pose.js';
 import {drawHeldWeapon,drawWeaponAction} from './weapon-renderer.js';
 import {drawSwing} from '../combat-visuals.js';
+import {drawHero} from '../volcanic.js';
 
 // Presentation only. Physical footprints and room transitions remain in Tilth.
 export function furniturePlacement(f){return{x:f.x,y:f.y,w:f.w,h:f.h,depth:f.y+f.h}}
 export function supportsInkAvatar(profile){return Object.entries({hairStyle:'Swept',hairColor:'#705039',skinColor:'#e4b47e',clothing:'Coat',outfitColor:'#a85b37'}).every(([key,value])=>profile?.[key]===value)}
+export function selectsInkAvatar(profile,selection='auto'){return selection==='drawn'||(selection==='auto'&&supportsInkAvatar(profile))}
 export function orderedInterior(room,playerY){return [...furnishings[room].map((f,i)=>({kind:'prop',index:i,depth:furniturePlacement(f).depth})),{kind:'player',depth:playerY+13}].sort((a,b)=>a.depth-b.depth)}
 export function studyMovement(directions,dt){const x=Number(directions.has('right'))-Number(directions.has('left')),y=Number(directions.has('down'))-Number(directions.has('up'));const length=Math.hypot(x,y)||1,step=Math.min(50,Math.max(0,dt))*.145;return{x:x/length*step,y:y/length*step}}
 export function walkFrame(distance,moving,turnRemaining=0,reduced=false){return reduced?7:turnRemaining>55?6:turnRemaining>0?7:moving?Math.floor(distance/8)%6:7}
@@ -55,19 +57,22 @@ function drawInkShell(b){
 }
 
 export function createInkStudy({onChange,onEnter,getProfile}){
- const assets={},state={enabled:true,avatar:true,loaded:false,error:null,room:null};let lastPosition=null,distance=0,lastFacing='down',turnUntil=0,readyPromise;
+ const assets={},state={enabled:true,avatar:'auto',loaded:false,error:null,room:null};let lastPosition=null,distance=0,lastFacing='down',turnUntil=0,readyPromise;
  const panel=document.createElement('section');panel.id='inkStudy';panel.hidden=true;panel.setAttribute('aria-label','Art study controls');
- panel.innerHTML='<div class="study-heading"><span>THE EMBER REST</span><b>A room in ink</b></div><div class="study-switches"><button id="inkMode" aria-pressed="true">Ink</button><button id="pixelMode" aria-pressed="false">Pixel</button><button id="studyAvatar" aria-pressed="true">Drawn avatar</button></div><p id="studyNote"></p>';document.body.append(panel);
+ panel.innerHTML='<div class="study-heading"><span>THE EMBER REST</span><b>A room in ink</b></div><div class="study-switches"><button id="inkMode" aria-pressed="true">Ink room</button><button id="pixelMode" aria-pressed="false">Pixel room</button></div><div class="study-avatar"><canvas id="studyAvatarPreview" width="200" height="240" role="img" aria-label="Enlarged character preview"></canvas><div class="study-switches" role="group" aria-label="Character appearance"><button id="studyAvatar" aria-pressed="true">Drawn character</button><button id="studyPixelAvatar" aria-pressed="false">Pixel character</button></div></div><p id="studyNote"></p>';document.body.append(panel);
  const launch=document.createElement('button');launch.id='openInkStudy';launch.textContent='✎ Art study';launch.setAttribute('aria-label','Visit the illustrated inn');document.body.append(launch);launch.onclick=()=>{void load().then(()=>onEnter())};
  function sync(){
   panel.hidden=state.room!=='inn';launch.hidden=state.room==='inn';document.body.classList.toggle('art-study-room',state.room==='inn');document.body.classList.toggle('ink-presentation',state.room==='inn'&&state.enabled&&state.loaded);
   panel.querySelector('#inkMode').setAttribute('aria-pressed',String(state.enabled));panel.querySelector('#pixelMode').setAttribute('aria-pressed',String(!state.enabled));
-  const supported=supportsInkAvatar(getProfile()),avatar=panel.querySelector('#studyAvatar');avatar.setAttribute('aria-pressed',String(state.avatar&&supported));avatar.textContent=state.avatar&&supported?'Drawn avatar':'Saved avatar';avatar.hidden=!state.enabled;avatar.disabled=!supported;
-  panel.querySelector('#studyNote').textContent=state.error||(!state.enabled?'Original pixel art. Switch to Ink to compare.':!state.loaded?'Loading the prepared drawings…':!supported?'This outfit has no drawing yet. Showing your saved appearance.':state.avatar?'Tilth designs, redrawn in ink. Same room, colors and equipment.':'Your saved pixel character, in the same room.');
+  const profile=getProfile(),supported=supportsInkAvatar(profile),drawn=state.enabled&&state.loaded&&selectsInkAvatar(profile,state.avatar),avatar=panel.querySelector('#studyAvatar');avatar.setAttribute('aria-pressed',String(drawn));avatar.disabled=!state.loaded;
+  panel.querySelector('#studyPixelAvatar').setAttribute('aria-pressed',String(!drawn));
+  panel.querySelector('#studyNote').textContent=state.error||(!state.loaded?'Loading the prepared drawings…':drawn&&!supported?'Drawn sample: brown hair and copper coat. Your saved appearance is unchanged.':drawn?'Your character in ink. Walking and weapons work in the room.':!supported?'Your saved appearance. Drawn character previews the prepared brown-haired, copper-coat sample.':'Your saved pixel character. Choose Drawn character to compare.');
+  drawAvatarPreview(profile,drawn);
  }
  panel.querySelector('#inkMode').onclick=()=>{state.enabled=true;sync();onChange();document.querySelector('#world').focus()};
  panel.querySelector('#pixelMode').onclick=()=>{state.enabled=false;sync();onChange();document.querySelector('#world').focus()};
- panel.querySelector('#studyAvatar').onclick=()=>{state.avatar=!state.avatar;sync();onChange();document.querySelector('#world').focus()};
+ panel.querySelector('#studyAvatar').onclick=()=>{state.enabled=true;state.avatar='drawn';sync();onChange();document.querySelector('#world').focus()};
+ panel.querySelector('#studyPixelAvatar').onclick=()=>{state.avatar='pixel';sync();onChange();document.querySelector('#world').focus()};
  const manifest={bed:'tilth-bed-v2',table:'tilth-table-v2',chest:'tilth-chest-v2',ember:'tilth-ember-v2'};
  function load(){
   if(readyPromise)return readyPromise;launch.disabled=true;launch.textContent='Loading art…';
@@ -85,7 +90,13 @@ export function createInkStudy({onChange,onEnter,getProfile}){
  }
  const background=document.createElement('canvas');background.width=1600;background.height=1200;const b=background.getContext('2d');b.scale(2,2);
  drawInkShell(b);
- const useDrawnAvatar=()=>state.avatar&&supportsInkAvatar(getProfile());
+ const useDrawnAvatar=()=>selectsInkAvatar(getProfile(),state.avatar);
+ function drawAvatarPreview(profile,drawn){
+  const canvas=panel.querySelector('#studyAvatarPreview'),c=canvas.getContext('2d');c.setTransform(2,0,0,2,0,0);c.clearRect(0,0,100,120);c.imageSmoothingEnabled=drawn;
+  canvas.setAttribute('aria-label',drawn?'Enlarged drawn character preview':'Enlarged saved pixel character preview');
+  if(drawn){const crop=assets.down.frames[7],h=98,w=h*crop.sw/crop.sh;blit(c,assets.down,50-w/2,10,w,h,crop)}
+  else drawHero(c,50,76,profile.outfitColor,2.4,'',false,{custom:profile,role:profile.heroClass,direction:'down'});
+ }
  function portrait(c){if(!state.loaded||!state.enabled||!useDrawnAvatar()||state.room!=='inn')return false;c.clearRect(0,0,c.canvas.width,c.canvas.height);const crop=assets.down.frames[7],upper={...crop,sh:crop.sh*.58};const scale=108/upper.sh;blit(c,assets.down,60-upper.sw*scale/2,6,upper.sw*scale,108,upper);return true}
  function drawPlayer(c,{x,y,facing,moving,time,attack,kind,weapon,reduced}){
   if(lastPosition)distance+=Math.min(20,Math.hypot(x-lastPosition.x,y-lastPosition.y));lastPosition={x,y};if(lastFacing!==facing){turnUntil=time+110;lastFacing=facing}
@@ -95,7 +106,7 @@ export function createInkStudy({onChange,onEnter,getProfile}){
   const scale=assets.ember.scale;blit(c,asset,(crop.sx-crop.cellX-asset.cellWidth/2)*scale,(crop.sy-crop.cellY-asset.baseline)*scale,crop.sw*scale,crop.sh*scale,crop);c.translate(0,-13);c.scale(1.05,1.05);if(facing==='left')c.scale(-1,1);
   if(attacking){if(!drawWeaponAction(c,attack,facing,weapon,kind))drawSwing(c,attack,facing,false,kind)}else if(!drawHeldWeapon(c,weapon)){stroke(c,[[12,4],[19,-21]],'#352b56',3);stroke(c,[[12,4],[19,-21]],'#bcafb7',1.5);stroke(c,[[9,4],[16,6]],'#a88256',2)}c.restore();
  }
- return {get ready(){return load()},get active(){return state.room==='inn'&&state.enabled&&state.loaded},get drawnAvatar(){return useDrawnAvatar()&&state.loaded},refreshProfile:sync,
+ return {get ready(){return load()},get active(){return state.room==='inn'&&state.enabled&&state.loaded},get drawnAvatar(){return state.enabled&&useDrawnAvatar()&&state.loaded},refreshProfile(){state.avatar='auto';sync()},
   setRoom(room){if(room!==state.room){state.room=room;lastPosition=null;if(room==='inn')void load();sync()}},portrait,
   drawRoom(c,player,drawOriginalPlayer,drawAttachments){c.drawImage(background,0,0,800,600);for(const item of orderedInterior('inn',player.y)){if(item.kind==='player'){if(useDrawnAvatar()){drawAttachments();drawPlayer(c,player)}else drawOriginalPlayer();continue}const f=furnishings.inn[item.index],p=furniturePlacement(f);c.fillStyle='#101b2048';c.fillRect(p.x+2,p.y+p.h-1,p.w,4);blit(c,assets[f.type],p.x,p.y,p.w,p.h)}}
  };

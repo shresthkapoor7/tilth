@@ -6,12 +6,12 @@
 
 Run the existing Vite server and open `http://127.0.0.1:5174/?art=ink`. The link enters The Ember Rest through the normal room-entry handler. **Art study** in the village opens the same room. New players still use Tilth's character creator.
 
-- **Ink / Pixel** compares the same room at the same player position.
+- **Ink room / Pixel room** compares the same room at the same player position.
 - Hold WASD/arrows to walk continuously in the inn and around its furniture.
-- **Drawn avatar / Saved avatar** compares the covered appearance with its pixel rendering. Other editor appearances automatically retain their saved pixel rendering.
+- **Drawn character / Pixel character** explicitly selects the character rendering. A magnified preview shows the difference. Drawn character also opens Ink room when needed. Unsupported outfits can preview the fixed brown-haired, copper-coat sample without changing the saved profile.
 - Existing weapon actions, combos, quests and the bottom doorway remain available.
 
-![Tilth designs redrawn in ink](art/tilth-ink-v2.png)
+![Current room and character comparison controls](art/character-toggle-desktop.png)
 
 ## Corrected camera and designs
 
@@ -27,15 +27,16 @@ Four prepared PNGs load once on study request or inn entry; ordinary village sta
 
 Tilth still owns collisions, movement, transitions, profiles, the event ledger, quests, generation queue, effects and sound. A real inn entry may advance an accepted visit objective. Presentation changes do not create gameplay events. Art drawing and movement require no image generation call. Asset failures keep the original pixel room available. Actor/prop ordering still uses ground position, while collision continues to prevent walking through furniture.
 
-The full-avatar sheet only covers Swept hair `#705039`, skin `#e4b47e`, Coat `#a85b37`. A different name or weapon works with the same drawn body. Changing any uncovered appearance field automatically restores the actual saved pixel character, including in dialogue. Restoring the covered choices restores the drawn option. Custom attachments and weapon animations still come from Tilth.
+The full-avatar sheet only covers Swept hair `#705039`, skin `#e4b47e`, Coat `#a85b37`. A different name or weapon works with the same drawn body. Saving editor changes resets the display to an automatic, faithful appearance: covered choices use the drawing and uncovered choices use the saved pixel character. Either character button remains available. Explicitly choosing Drawn character with unsupported choices shows a labeled sample, including in dialogue, without editing the profile. Explicitly choosing Pixel character restores the actual saved appearance. Custom attachments and weapon animations still come from Tilth.
 
 See [customizable character art](CHARACTER_ART.md) for the proposed registered layers, color masks, per-direction draw order and editor integration. The current complete-character atlas is an appearance proof, not that modular system.
 
 ## Validation
 
-- All 46 tests pass, including unchanged game rules, exact illustration footprint registration, actor/prop ordering, bounded continuous movement against actual furnishing data, prepared frame selection and editor fallback rules.
+- All 47 tests pass, including unchanged game rules, exact illustration footprint registration, actor/prop ordering, bounded continuous movement against actual furnishing data, prepared frame selection, automatic editor fallback and explicit sample selection.
 - Modern unminified Vite build passes using `node node_modules/vite/bin/vite.js build --configLoader native --minify false --target esnext` on this Windows host.
 - Browser inspection at 1280 by 720 covers the original/drawn room comparison, alpha edges, continuous movement around furniture and behind the table, hairstyle and hair-color edits, and restoring the drawn appearance. Four art files loaded and no page errors occurred. This isolated visual check disabled model requests.
+- A focused browser regression checks both character buttons, repeated Drawn clicks, selecting Drawn from Pixel room, unsupported hairstyle/color/clothing choices, unchanged editor values, automatic display reset after saving, actual magnified-canvas differences, and clicks at 1280 by 720 and 319 by 791. No page errors occurred.
 - The first proof previously verified a recognized bow combo, first-visit dialogue and the normal exit into the village with the live runtime.
 
 No frame-rate or network-latency benchmark is claimed. Shipping-size optimization, full directional turning, drawn attack poses, modular customization, NPCs, other locations and mobile layout polish remain outside this proof.
