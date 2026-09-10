@@ -47,7 +47,7 @@ Three sequences trigger special finishers:
 
 Let each action finish, then start the next within **1.6 seconds**. Cooldown-blocked inputs do not count. The combo guide displays the selected weapon’s move names, and the HUD tracks sequence progress.
 
-A staged boss battle also previews the customized player attacking and a healer casting, with floating combat indicators. Overworld attacks now deal damage using facing, weapon range, and wall checks. Real multiplayer PvP, simulated projectile travel, and generated skill damage are still not implemented.
+A staged boss battle also previews the customized player attacking and a healer casting, with floating combat indicators. Overworld attacks now deal damage using facing, weapon range, and wall checks. Real multiplayer PvP and simulated projectile travel are still not implemented.
 
 ### Act in a persistent world
 
@@ -66,7 +66,7 @@ World actions and NPC decisions use the logged-in Claude CLI by default for loca
 | Optional quest | Explicitly ask for an optional task in the quest panel |
 | Follow-up quest | Optional quest runs can queue one follow-up; the main goal does not start an endless quest chain |
 | Replacement quest | Choose “Request a different task” on an offered or active quest |
-| Awakening offer | Three distinct meaningful events since the previous evaluation, with no unresolved offer/job |
+| Awakening offer | One offer per completed quest; automatically queued |
 | Journal reflection | Six new meaningful events, summarized in a batch |
 
 Meaningful events currently include first house discoveries, first combo achievements, and quest completion. Ordinary movement and opening the journal do not call the API. Repeated discoveries do not farm awakening progress.
@@ -113,8 +113,8 @@ Restart the dev server after configuring it. The model must be available to your
 | WASD / arrow keys | Move |
 | Space / 1, Q, E, R | Selected weapon’s attacks |
 | Shift | Dodge roll |
-| 2 / 3 / 4 | Guard, rally effect, and potion |
-| 5 | Activate an accepted awakening’s visual skill; keyboard shortcut only |
+| 2 / 3 / 4 | Guard, rally preview, and healing potion |
+| 5 | Activate the accepted awakening attack (also available in the awakening menu) |
 | Esc | Open the menu, return to it, or resume |
 | C | Create/edit character |
 | I | Inventory |
@@ -157,7 +157,7 @@ See [ENGINE.md](docs/ENGINE.md) for generation timing, persistence, validation, 
 - NPC hostility, assistance and witnessed obligations are implemented. Character evidence is modest and bounded by supported rules; arbitrary new mechanics and hard moral skill trees are not implemented.
 - Quest variety is bounded by three rooms and three combos; new quest titles do not create new playable locations or mechanics.
 - AI character generation selects supported features and may add custom pixel details. Weapon starter moves are authored, not invented by the LLM.
-- Appearance attachments use bounded pixel rectangles; generated awakening skills use supported visual primitives.
+- Appearance attachments use bounded pixel rectangles. Generated moves use engine-supported arc, thrust, beam, nova and spiral styles with validated damage and timing; the AI does not execute arbitrary code.
 - Class progression, functional stat effects, a complete equipment system, and full combat remain unfinished.
 - Production uses `npm start` to serve `dist` and the generation API together. Serving `dist` alone cannot handle AI requests.
 - Request caching and API budgets are process-local. A production multiplayer release needs authentication, authoritative events, and durable server storage.
@@ -189,3 +189,35 @@ Ash Raider and Cinder Sentry patrol the southern road and attack when approached
 Characters pursue using collision-checked paths, calm down after disengagement, and yield when their health reaches zero. They recover after 18 seconds of active outdoor play. Player defeat restores health at the outpost. Menus, dialogue, hidden tabs and interiors pause outdoor combat. Combat health and actor positions now persist with the world save; observations and received dialogue remain in the journal.
 
 A struck character immediately protests using an authored line. Stateful friendly NPC decisions use the world narrator and their filtered observations. Combat continues locally, and delayed responses are discarded when the room or character's combat eligibility changes. Provider failures leave direct gameplay available and can be retried using Reconnect.
+
+
+## Generated awakening moves
+
+New awakenings include a primary attack and an AI-named, three-input combo finisher. The generator chooses the combo sequence, distinct animation styles, color, range, damage per hit and hit count. Press **5** for the primary attack, or open **U → Use move** on touch devices. Open **K** for the accepted combo's exact controls. The finisher replaces the last action in its sequence; wait for each action to finish before entering the next input.
+
+Both moves share a cooldown and deal real outdoor damage. Their directional or radial hit checks obey walls and Rowan's protection. Damage is capped at 90 per activation and up to three hits. Accepting another awakening replaces the current generated recipe; declined and pending offers do not grant moves. Learned generated finishers are recorded in the journal without farming discovery rewards. Saved move execution and rendering never request new move generation; hitting an NPC can still trigger its separate dialogue request.
+
+Existing saved awakenings remain valid and gain a basic 24-damage radial burst. Complete a quest to earn a new awakening-and-combo offer automatically. Each quest grants exactly one offer: accepting or declining it never grants a reroll. Failed requests retry the same reward. Further completed quests earn additional offers even when an earlier offer is still awaiting a decision. Exploration and practice alone do not generate awakenings. Older unfinished manual-generation requests are cancelled on reload; existing offered and accepted awakenings are preserved.
+
+## The boundary witch and expanding world
+
+Walk beyond the northern road, southern road, western edge, or the eastern bridge to encounter the boundary witch. Her question is generated by the API. Describe what you seek, then watch the summoning animation while she generates the neighboring area and her response. All witch speech is generated; loading labels and buttons are ordinary interface text. If generation fails or is cancelled, the player remains on the current map and can retry.
+
+The world grows as connected 800×600 areas, with up to 16 generated areas in this prototype. Generated data supplies area names, themes (forest, marsh, frost, volcanic), terrain patches, landmarks, accents, and enemy counts. Each area has collision and guaranteed return paths. Walk back through the opposite edge to return; revisiting saved areas makes no generation request. The quest tracker points along existing areas toward Cinderwatch. The origin scene still contains the authored houses, Rowan and quests.
+
+The witch receives a bounded snapshot prioritizing recorded attacks on characters, completed quests, and exploration. She may respond spitefully to a cited attack on a townsperson, twisting the wish and placing hostile patrols. A hostile result is rejected without that evidence; fighting enemies alone cannot justify it. She can also choose mercy. Her verdict changes the generated terrain and enemy population, not the player's permanent moral alignment. Generated terrain is composed from supported engine tiles; this is not arbitrary code generation or an unlimited asset generator.
+
+New areas and their generation evidence are saved in the browser with the existing game save. Witch responses are added to the journal on entry. Reloading starts at Cinderwatch, retaining all discovered areas. Generation uses two explicit API calls for a new boundary encounter (question, then area); revisits use none. These calls share the existing server generation budget. Defeated regional enemies and claimed area rewards persist across reloads. Damage to surviving enemies is session-local.
+
+
+### Map variety
+
+Generated areas now choose a macro layout (archipelago, winding river, caldera, woodland or ruined courtyards), seed, terrain patches, and typed landmarks. The server excludes the two most recent layouts from the next region's schema, while passing recent names/themes to the model to discourage repeated compositions. A forest request can still keep its theme while changing its geography.
+
+Routes follow terrain and connect entrances, landmarks, patrol positions and recovery points; water and lava crossings become bridges. The fixed central crossroads and perimeter highway have been removed. Trees, rock formations, shores, ruins, shrines, arches, towers, camps and crystals have distinct rendered shapes. Existing saved regions retain their names and content, with deterministic layouts derived from their names when no seed/layout was saved. Their appearance and collision are rebuilt together on re-entry, so existing areas benefit without another API call.
+
+### Populated regions
+
+Newly generated areas include 3–5 named enemies, 1–2 enterable furnished houses, residents, and a local objective. The API writes enemy names and taunts, house names, resident dialogue, and the objective. Hostile witch outcomes contain stronger groups. The engine places these characters and buildings on connected routes and handles collision, combat, and quest progress.
+
+Walk upward into a house doorway to enter; approach the resident and press **F** to talk. Their dialogue opens a quest offer: choose **Accept quest**, or close it and decide later in **Quests (T)**. Once accepted, follow the objective marker to fight the patrols. Previously defeated patrols count toward the task. After defeating every regional enemy, report to a resident to restore health and earn one quest-completion awakening offer. Returning or talking again cannot duplicate the reward. The tracker points to remaining enemies, then a house, then the resident. Older saved regions gain a default refuge and three enemies without requiring another API call.
