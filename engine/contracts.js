@@ -23,7 +23,12 @@ export const SCHEMAS={
  quest:obj({title:str(70),description:str(500),sourceEventIds,objectives:list(obj({type:{type:'string',enum:['visit_room','perform_combo']},target:{type:'string',enum:['inn','smith','home','Cleave','Cyclone','Breaker']},description:str(160)}),3)}),
  journal:obj({title:str(70),summary:str(700),sourceEventIds})
 };
-const sceneryRegion=structuredClone(SCHEMAS.region);for(const k of ['objective','houses','enemies']){delete sceneryRegion.properties[k];sceneryRegion.required=sceneryRegion.required.filter(v=>v!==k)}sceneryRegion.properties.enemyCount={type:'integer',minimum:0,maximum:2};
+const populatedRegion=structuredClone(SCHEMAS.region);
+SCHEMAS.region.properties.objective.properties.tasks=list(obj({kind:{type:'string',enum:['push_rock','clear_debris','delivery','defeat']},description:str(160),label:str(45),landmarkIndex:num(0,3),recipientIndex:num(0,1)}),4,2);
+SCHEMAS.region.properties.objective.required.push('tasks');
+SCHEMAS.region.properties.consequence=obj({kind:{type:'string',enum:['none','ember_trail','restless_patrols']},explanation:str(240)});
+SCHEMAS.region.required.push('consequence');
+const sceneryRegion=structuredClone(populatedRegion);for(const k of ['objective','houses','enemies']){delete sceneryRegion.properties[k];sceneryRegion.required=sceneryRegion.required.filter(v=>v!==k)}sceneryRegion.properties.enemyCount={type:'integer',minimum:0,maximum:2};
 const legacyRegion=structuredClone(sceneryRegion);for(const k of ['layout','seed']){delete legacyRegion.properties[k];legacyRegion.required=legacyRegion.required.filter(v=>v!==k)}delete legacyRegion.properties.landmarks.items.properties.kind;legacyRegion.properties.landmarks.items.required=legacyRegion.properties.landmarks.items.required.filter(v=>v!=='kind');
 const legacyAwakening=structuredClone(SCHEMAS.awakening);for(const k of ['move','combo']){delete legacyAwakening.properties.skill.properties[k];legacyAwakening.properties.skill.required=legacyAwakening.properties.skill.required.filter(v=>v!==k)}
 export function matches(schema,value){
@@ -34,8 +39,17 @@ export function matches(schema,value){
  return false;
 }
 export function validateContent(kind,value,events){
- if(!SCHEMAS[kind]||!(matches(SCHEMAS[kind],value)||(kind==='awakening'&&matches(legacyAwakening,value))||(kind==='region'&&(matches(legacyRegion,value)||matches(sceneryRegion,value)))))throw new Error('Generated content does not match the engine contract.');
+ if(!SCHEMAS[kind]||!(matches(SCHEMAS[kind],value)||(kind==='awakening'&&matches(legacyAwakening,value))||(kind==='region'&&(matches(populatedRegion,value)||matches(legacyRegion,value)||matches(sceneryRegion,value)))))throw new Error('Generated content does not match the engine contract.');
  if(kind==='reaction'&&(!value.sourceEventIds.length||!value.sourceEventIds.every(id=>events.some(e=>e.id===id&&e.type==='combat_hit'&&e.target===value.speaker))))throw new Error('Reaction must cite a hit on the speaking character.');
+ if(kind==='region'&&value.objective?.tasks){
+  const tasks=value.objective.tasks;
+  if(!tasks.some(t=>t.kind!=='defeat'))throw new Error('Include an errand beyond combat.');
+  if(tasks.some(t=>t.landmarkIndex>=value.landmarks.length||t.recipientIndex>=value.houses.length))throw new Error('Task refers to an unavailable place or resident.');
+  const props=tasks.filter(t=>t.kind!=='defeat');if(new Set(props.map(t=>t.landmarkIndex)).size!==props.length)throw new Error('Place task props at distinct landmarks.');
+  if(tasks.filter(t=>t.kind==='defeat').length>1)throw new Error('Only one patrol objective is supported.');
+  if(value.verdict==='welcoming'&&value.consequence.kind!=='none')throw new Error('Punishment needs a hostile verdict.');
+  if(value.verdict==='hostile'&&value.consequence.kind==='none')throw new Error('A hostile verdict needs a playable consequence.');
+ }
  if(kind==='region'&&value.enemies&&value.enemyCount!==value.enemies.length)throw new Error('Enemy count must match the region roster.');
  if(kind==='region'&&value.verdict==='hostile'){if(!events.some(e=>value.sourceEventIds.includes(e.id)&&e.type==='combat_hit'&&ACTORS.some(a=>a.id===e.target&&!a.enemy&&a.attackable!==false)))throw new Error('A hostile witch response needs evidence of attacking a townsperson.');if(value.enemyCount<1)throw new Error('A hostile region must contain a challenge.');}
  const allowed=new Set(events.map(e=>e.id));

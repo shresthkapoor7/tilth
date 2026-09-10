@@ -1,214 +1,86 @@
 # Tilth
 
-This integration branch adds Notebook World’s bottom dialogue, contextual thoughts and persistent witnessed NPC reactions while retaining Tilth’s world, character creator and weapon animations. See [integration scope, validation and merge instructions](docs/INTEGRATION.md). The object/law sandbox is the next proposed port; it is not integrated yet.
+**A wish remembers its maker.**
 
-A 2D pixel-art RPG prototype where exploration and learned techniques can lead to AI-generated quests, character changes, and optional awakenings.
+Tilth is a single-player pixel RPG built around a boundary witch. Tell her what lies beyond the map. GPT-6 Astra interprets your wish alongside your recorded actions, then designs a traversable region with named residents, enemies, errands, and a judgment you can play through.
 
-The current build takes place in **Cinderwatch**, a volcanic outpost with magma rivers, stone buildings, a forge, and furnished interiors. It runs in the browser with keyboard and touch controls. The full-screen world, menus, and character art use a retro pixel style with richer shading and lighting.
+Help someone and she has evidence of kindness. Strike a resident and your wish may come back twisted: footsteps that kindle into embers, or patrols that notice you from farther away. Her words cite actual events. She can choose mercy; the engine never assumes that exploration or ordinary combat makes you evil.
 
-## What you can do now
+## Play
 
-### Create your character
+- Create a traveler with a name, appearance, class, and sword, spear, bow, or staff. Describe an idea or ask AI for a character.
+- Explore Cinderwatch and walk to a boundary to meet the witch. Ask for a place, atmosphere, or activity.
+- Meet residents inside furnished houses and accept their quests. Astra can combine moving a boulder, clearing debris, collecting and delivering supplies, and defeating patrols.
+- Follow the objective marker. **F** interacts with objects or talks to a nearby resident. A delivery needs the correct parcel and recipient; carried parcels appear in your satchel.
+- Return to a resident after completing the tasks. Each regional quest restores health and grants one generated awakening offer with a new combat move and combo. Accepting an awakening replaces the previous one; declining keeps it.
+- Explore another edge. Regions, tasks, parcel inventory, defeated enemies, quests, and awakenings are saved in your browser.
 
-- Choose a name and class: Warrior, Mage, Rogue, or Healer.
-- Pick from five hairstyles, hair colors, skin tones, four clothing styles, and outfit colors.
-- Choose a sword, spear, bow, or staff independently of class.
-- Preview your appearance and weapon move set before entering the world.
-- Ask AI for a name, describe a new character, or generate a random character with custom pixel details.
-- Edit any generated draft before saving. Typed names are preserved unless you explicitly generate a new name.
-- Reopen the creator later without resetting your quest or journal history.
+The authored starter village and previously generated quests remain compatible with older saves. Newly generated regions use the richer errand contract; existing accepted quests retain their original objectives.
 
-### Explore the outpost
+## Astra and the engine
 
-- Walk and dodge through a world with collision for buildings, rocks, fences, furniture, and magma.
-- Cross the stone bridge and enter three furnished buildings: the Ember Rest, Cinderwatch Smithy, and Watchkeeper’s House.
-- Follow the quest tracker’s compass directions and destination markers.
-- Use the in-game inventory, party preview, journal, quest panel, and awakening menu.
-- Hear footsteps, menu interactions, equipment sounds, attacks, casting, and combo finishers. The sound toggle remembers your preference.
+Astra generates character details, witch dialogue, region designs, names, task combinations and descriptions, evidence-based consequences, awakening move definitions, and journal reflections. Responses use a strict JSON schema and are validated before the game applies them.
 
-### Try weapon moves and combos
+The engine owns movement, collision, reachable paths, sprites and effect primitives, task interactions, inventory, combat damage, and completion checks. It executes bounded data; it does not run arbitrary generated JavaScript. A model-written promise cannot grant an unsupported ability or reward.
 
-Each weapon has distinct held art, action poses, effects, timings, and sounds. Animations include directional strikes, bowstring draw/release, staff casting, and a collision-aware dodge roll.
-
-| Weapon | Space / 1 | Q | E | R |
-| --- | --- | --- | --- | --- |
-| Sword | Quick cut | Heavy cleave | Whirlwind | Shield bash |
-| Spear | Jab | Piercing thrust | Sweeping pole | Shaft parry |
-| Bow | Quick shot | Charged arrow | Fan volley | Bow strike |
-| Staff | Spark bolt | Arcane nova | Orbiting sparks | Runic ward |
-
-Three sequences trigger special finishers:
-
-| Combo | Inputs |
-| --- | --- |
-| Cinder Cleave | Space → Space → Q |
-| Ash Cyclone | Shift → Space → E |
-| Forge Breaker | R → Q → Space |
-
-Let each action finish, then start the next within **1.6 seconds**. Cooldown-blocked inputs do not count. The combo guide displays the selected weapon’s move names, and the HUD tracks sequence progress.
-
-A staged boss battle also previews the customized player attacking and a healer casting, with floating combat indicators. Overworld attacks now deal damage using facing, weapon range, and wall checks. Real multiplayer PvP and simulated projectile travel are still not implemented.
-
-### Receive AI-generated content
-
-The server requests structured content from the OpenAI Responses API. Results are validated as data; generated JavaScript is never executed.
-
-| Content | Trigger |
-| --- | --- |
-| NPC reaction | A landed hit, at most once per character per 30 seconds of active play; replies are grounded in that hit |
-| Character or name | Explicit creator button: description, random character, or name |
-| First quest | Speak to Rowan near the inn |
-| Follow-up quest | Complete the current quest; one new request is queued automatically |
-| Replacement quest | Choose “Request a different task” on an offered or active quest |
-| Awakening offer | One offer per completed quest; automatically queued |
-| Journal reflection | Six new meaningful events, summarized in a batch |
-
-Meaningful events currently include first house discoveries, first combo achievements, and quest completion. Ordinary movement and opening the journal do not call the API. Repeated discoveries do not farm awakening progress.
-
-Quests use supported room visits and combo objectives. The generator receives recent objective history, excludes the immediately previous objectives, and prioritizes less-used activities. Repeated objectives are rejected even when the title changes. New quests must be accepted before their objectives count.
-
-Awakenings are **offers**: preview the appearance and skill, then accept, decline, or decide later. Accepting replaces the active awakening; declining preserves it. Generated appearance and skill definitions are saved and reused without another API call each time they render or activate.
+The witch receives a bounded journal snapshot including helpful errands, attacks on residents, completed quests, and exploration. Hostile consequences require a cited resident hit. She cannot invent stolen gold, dead relatives, or a trading system.
 
 ## Run locally
 
-Use Node.js 20.19+ or 22.12+.
-
 ```sh
 npm install
+cp .env.example .env
+# Add your server-side OPENAI_API_KEY to .env.
 npm run dev
 ```
 
-Open **http://localhost:5173/**. The authored world, creator, and combat previews work without an API key.
+Open **http://localhost:5173/**. Configure:
 
-For AI generation, copy `.env.example` to `.env` if you do not already have one:
-
-```sh
-cp .env.example .env
-```
-
-Then configure:
-
-```env
+```dotenv
 OPENAI_API_KEY=your_key_here
-OPENAI_MODEL=gpt-5.6-terra
+OPENAI_MODEL=gpt-6-astra
+OPENAI_REASONING_EFFORT=low
 OPENAI_MAX_GENERATIONS=20
 ```
 
-Restart the dev server after configuring it. The model must be available to your account and support Responses API Structured Outputs. Reasoning effort is currently left at the model default.
-
-`.env` is Git-ignored. Credentials stay in server-side development middleware; never add a `VITE_` prefix to the API key. Configured milestone jobs run automatically and incur API usage. The default limit is 20 upstream attempts per server process, including failed attempts. Failed generation is shown in the interface and can be retried explicitly.
-
-## Controls
-
-| Input | Action |
-| --- | --- |
-| WASD / arrow keys | Move |
-| Space / 1, Q, E, R | Selected weapon’s attacks |
-| Shift | Dodge roll |
-| 2 / 3 / 4 | Guard, rally preview, and healing potion |
-| 5 | Activate the accepted awakening attack (also available in the awakening menu) |
-| Esc | Open the menu, return to it, or resume |
-| C | Create/edit character |
-| I | Inventory |
-| J | Journal |
-| P | Party preview |
-| B | Staged boss battle |
-| K | Combo guide |
-| F | Talk to Rowan when nearby |
-| T | Quests |
-| U | Awakenings |
-
-On mobile, use the movement pad, skill buttons, Talk button, and in-game menu. Movement shortcuts sit at the top-left; the quest tracker sits along the top on desktop. The standalone awakening-skill button has been removed.
-
-## Saved progress
-
-Character choices, gear selection, discoveries, learned combos, journal history, quests, generation jobs, and awakening decisions persist in this browser’s `localStorage`. Sound preference is stored separately.
-
-Refreshing returns the character to the outpost rather than restoring a position inside potentially changed geometry. Active animations and the staged battle reset. Saves are local to the browser and are not synced between devices.
-
-## Engine structure
-
-| Path | Responsibility |
-| --- | --- |
-| `content/` | Authored world, character, weapon, skill, and combo definitions |
-| `engine/runtime.js` | Persistent state, factual events, quest progress, and awakening decisions |
-| `engine/contracts.js` | Shared generation schemas and validation |
-| `engine/generation.js` | Asynchronous generation queue |
-| `engine/onboarding.js` | Draft character creator and explicit AI requests |
-| `engine/quest-guidance.js` | Quest diversity checks and next-objective guidance |
-| `engine/*renderer.js`, `engine/attack-pose.js` | Generated visuals, weapon effects, and body animation |
-| `server/generation-api.js` | Server-only OpenAI adapter, validation, caching, and request budgets |
-| `world.js`, `interiors.js`, `volcanic.js` | Collision, rooms, and procedural pixel artwork |
-| `main.js` | Input, scene, HUD, and battle integration |
-
-See [ENGINE.md](docs/ENGINE.md) for generation timing, persistence, validation, and architectural boundaries.
-
-## Current limits
-
-- No multiplayer, accounts, server-authoritative gameplay, or cloud saves.
-- NPC hostility and retaliation are implemented. Assistance encounters and good/evil progression are not; striking a character records a fact but does not automatically assign moral traits.
-- Quest variety is bounded by three rooms and three combos; new quest titles do not create new playable locations or mechanics.
-- AI character generation selects supported features and may add custom pixel details. Weapon starter moves are authored, not invented by the LLM.
-- Appearance attachments use bounded pixel rectangles. Generated moves use engine-supported arc, thrust, beam, nova and spiral styles with validated damage and timing; the AI does not execute arbitrary code.
-- Class progression, functional stat effects, a complete equipment system, and full combat remain unfinished.
-- Production uses `npm start` to serve `dist` and the generation API together. Serving `dist` alone cannot handle AI requests.
-- Request caching and API budgets are process-local. A production multiplayer release needs authentication, authoritative events, and durable server storage.
-
-## Verification
+The key stays on the server. Never put it in a `VITE_` variable. Astra supports Structured Outputs and low reasoning effort; see the [official model documentation](https://developers.openai.com/api/docs/models/gpt-6-astra). Local `.env` settings do not update Railway variables automatically.
 
 ```sh
 npm test
 npm run build
+npm start
 ```
 
-The automated tests cover collision, combos, weapon poses, character persistence, generation contracts, quest progression and diversity, awakening decisions, API caching, and error handling. Tests stub OpenAI requests and do not spend API credits. Manual browser checks have also covered onboarding, AI draft review, touch layout, battle animation, and live generation.
+`npm start` serves `dist` and the API together on `PORT` (3000 by default). Production reads environment variables supplied by the host; for a local production check with a dotenv file, use `node --env-file=.env server/start.js` after building.
 
+## Controls
 
-## Railway deployment
+| Key | Action |
+| --- | --- |
+| WASD / arrows | Move |
+| F | Talk, move a rock, clear debris, collect or deliver a parcel |
+| Space / 1 | Weapon attack |
+| Q / E / R | Weapon-specific heavy, spin, and special attacks |
+| Shift | Dodge |
+| 2 | Brief guard |
+| 4 | Restore 40 HP, with an eight-second cooldown |
+| 5 | Accepted awakening move |
+| T / J / I | Quests / journal / satchel |
+| C / U / K | Character / awakenings / combo guide |
+| Esc | Menu |
 
-`railway.json` sets the build command to `npm run build`, start command to `npm start`, and health check to `/api/generation/status`. The Node server binds to `0.0.0.0` on Railway's `PORT`. If you have a custom start command in Railway, use `npm start` rather than a static file server or `vite preview`.
+Touch movement and combat buttons are available on small screens. Floating damage, impact particles, brief heavy-hit pause and shake provide combat feedback; reduced-motion preferences disable shake and hit pause. The witch has an optional **Read aloud** toggle using browser speech synthesis. It reads generated text and is not Astra-generated audio; voice availability varies by device.
 
-Set `OPENAI_API_KEY` and `OPENAI_MODEL` in the service's Railway Variables. The model must be available to your API project. Local `.env` files are not deployed or automatically loaded by the production server. Optionally set `OPENAI_MAX_GENERATIONS` (default 20 attempts per server process; shared by all visitors and reset on restart).
+## Generation and persistence
 
-Deploy the updated source, then check `/api/generation/status`: it should return JSON `{"configured":true}`, not the game HTML. This confirms configuration is present, not model access or billing validity; test a character name request to verify the provider connection.
+Approaching an unexplored edge may prefetch one witch greeting, throttled to once per 45 seconds. The greeting is reused only when its destination and journal snapshot match. The region is generated **after** the actual wish; loading animation stays visible until validation succeeds. Revisiting an existing region makes no API request. Nothing promises zero-latency generation.
 
+Up to 16 regions are stored locally. Reloading starts at Cinderwatch while retaining the world and progression. Surviving enemy HP is session-local; defeated regional enemies stay defeated. Parcels and completed task props remain saved. A quest must be accepted and reported back before its reward can be claimed, and each reward is issued once.
 
-## Roaming encounters
+API requests are cached and limited per server process. Failures show a retry path without replacing the map. Without an API key the authored village remains playable, but new AI content is unavailable. This submission does not include multiplayer, accounts, cloud saves, arbitrary art/code generation, or a trading economy. Local save events are appropriate for this single-player prototype, not authoritative multiplayer anti-cheat.
 
-Ash Raider and Cinder Sentry patrol the southern road and attack when approached. Lunara, Clover and Foxglove wander near their homes and defend themselves when struck. Rowan is a protected quest giver: attacks cannot damage or provoke him, and he does not retaliate. Face a target and use Space, Q, E or R; combos deal stronger hits. Walls block attacks, including ranged weapon strikes. Orange wind-up rings warn of an incoming strike: move away or roll with Shift. Guard reduces damage briefly, and a potion (4) heals 40 HP with an eight-second cooldown.
+## Railway
 
-Characters pursue using collision-checked paths, calm down after disengagement, and yield when their health reaches zero. They recover after 18 seconds of active outdoor play. Player defeat restores health at the outpost. Menus, dialogue, hidden tabs and interiors pause outdoor combat. Combat health and actor positions reset on reload; recorded provocations and received AI dialogue remain in the journal.
+Use build command `npm run build`, start command `npm start`, and health check `/api/generation/status` as defined in `railway.json`. Add the four environment variables above to Railway, including `OPENAI_MODEL=gpt-6-astra`. A static file server cannot handle `POST /api/generation`.
 
-A struck character immediately protests using an authored line. When AI is connected, a separate bounded request generates a short personal response; it never controls damage or movement. Replies arrive in overhead speech bubbles without pausing combat and are discarded if the character has already yielded or disengaged. Provider failures keep the authored response and show an availability message. These requests share the server's existing per-process generation budget with quests and character creation.
-
-
-## Generated awakening moves
-
-New awakenings include a primary attack and an AI-named, three-input combo finisher. The generator chooses the combo sequence, distinct animation styles, color, range, damage per hit and hit count. Press **5** for the primary attack, or open **U → Use move** on touch devices. Open **K** for the accepted combo's exact controls. The finisher replaces the last action in its sequence; wait for each action to finish before entering the next input.
-
-Both moves share a cooldown and deal real outdoor damage. Their directional or radial hit checks obey walls and Rowan's protection. Damage is capped at 90 per activation and up to three hits. Accepting another awakening replaces the current generated recipe; declined and pending offers do not grant moves. Learned generated finishers are recorded in the journal without farming discovery rewards. Saved move execution and rendering never request new move generation; hitting an NPC can still trigger its separate dialogue request.
-
-Existing saved awakenings remain valid and gain a basic 24-damage radial burst. Complete a quest to earn a new awakening-and-combo offer automatically. Each quest grants exactly one offer: accepting or declining it never grants a reroll. Failed requests retry the same reward. Further completed quests earn additional offers even when an earlier offer is still awaiting a decision. Exploration and practice alone do not generate awakenings. Older unfinished manual-generation requests are cancelled on reload; existing offered and accepted awakenings are preserved.
-
-## The boundary witch and expanding world
-
-Walk beyond the northern road, southern road, western edge, or the eastern bridge to encounter the boundary witch. Her question is generated by the API. Describe what you seek, then watch the summoning animation while she generates the neighboring area and her response. All witch speech is generated; loading labels and buttons are ordinary interface text. If generation fails or is cancelled, the player remains on the current map and can retry.
-
-The world grows as connected 800×600 areas, with up to 16 generated areas in this prototype. Generated data supplies area names, themes (forest, marsh, frost, volcanic), terrain patches, landmarks, accents, and enemy counts. Each area has collision and guaranteed return paths. Walk back through the opposite edge to return; revisiting saved areas makes no generation request. The quest tracker points along existing areas toward Cinderwatch. The origin scene still contains the authored houses, Rowan and quests.
-
-The witch receives a bounded snapshot prioritizing recorded attacks on characters, completed quests, and exploration. She may respond spitefully to a cited attack on a townsperson, twisting the wish and placing hostile patrols. A hostile result is rejected without that evidence; fighting enemies alone cannot justify it. She can also choose mercy. Her verdict changes the generated terrain and enemy population, not the player's permanent moral alignment. Generated terrain is composed from supported engine tiles; this is not arbitrary code generation or an unlimited asset generator.
-
-New areas and their generation evidence are saved in the browser with the existing game save. Witch responses are added to the journal on entry. Reloading starts at Cinderwatch, retaining all discovered areas. Generation uses two explicit API calls for a new boundary encounter (question, then area); revisits use none. These calls share the existing server generation budget. Defeated regional enemies and claimed area rewards persist across reloads. Damage to surviving enemies is session-local.
-
-
-### Map variety
-
-Generated areas now choose a macro layout (archipelago, winding river, caldera, woodland or ruined courtyards), seed, terrain patches, and typed landmarks. The server excludes the two most recent layouts from the next region's schema, while passing recent names/themes to the model to discourage repeated compositions. A forest request can still keep its theme while changing its geography.
-
-Routes follow terrain and connect entrances, landmarks, patrol positions and recovery points; water and lava crossings become bridges. The fixed central crossroads and perimeter highway have been removed. Trees, rock formations, shores, ruins, shrines, arches, towers, camps and crystals have distinct rendered shapes. Existing saved regions retain their names and content, with deterministic layouts derived from their names when no seed/layout was saved. Their appearance and collision are rebuilt together on re-entry, so existing areas benefit without another API call.
-
-### Populated regions
-
-Newly generated areas include 3–5 named enemies, 1–2 enterable furnished houses, residents, and a local objective. The API writes enemy names and taunts, house names, resident dialogue, and the objective. Hostile witch outcomes contain stronger groups. The engine places these characters and buildings on connected routes and handles collision, combat, and quest progress.
-
-Walk upward into a house doorway to enter; approach the resident and press **F** to talk. Their dialogue opens a quest offer: choose **Accept quest**, or close it and decide later in **Quests (T)**. Once accepted, follow the objective marker to fight the patrols. Previously defeated patrols count toward the task. After defeating every regional enemy, report to a resident to restore health and earn one quest-completion awakening offer. Returning or talking again cannot duplicate the reward. The tracker points to remaining enemies, then a house, then the resident. Older saved regions gain a default refuge and three enemies without requiring another API call.
+See [SUBMISSION_PLAN.md](SUBMISSION_PLAN.md) for the polish checklist and [DEMO.md](DEMO.md) for the presentation route.

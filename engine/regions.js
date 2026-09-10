@@ -1,4 +1,4 @@
-import {regionLife} from './region-life.js';
+import {regionLife,regionalTasks} from './region-life.js';
 import {regionSeed,regionLayout} from '../content/region-design.js';
 import {validateContent} from './contracts.js';
 export const OPPOSITE={up:'down',down:'up',left:'right',right:'left'};
@@ -23,7 +23,7 @@ export function regionGrid(content){
  for(const h of life.houses){for(let y=h.y-2;y<=h.y+4;y++)for(let x=h.x-3;x<=h.x+3;x++)grid[y][x]='path';for(let y=h.y-2;y<=h.y+1;y++)for(let x=h.x-2;x<=h.x+2;x++)grid[y][x]='house';}
  // Join entrances, recovery point, patrol spawns and monuments using a seeded minimum spanning tree.
  // Weighted paths follow land when possible; crossings become bridges, not erased rivers.
- const nodes=[{x:20,y:2},{x:20,y:26},{x:2,y:15},{x:37,y:15},{x:20,y:16},{x:20,y:12},{x:20,y:20},...content.landmarks.map(m=>({x:m.x,y:m.y})),...life.houses.map(h=>({x:h.x,y:h.y+3})),...life.enemies.map(e=>({x:e.x,y:e.y}))];
+ const nodes=[{x:20,y:2},{x:20,y:26},{x:2,y:15},{x:37,y:15},{x:20,y:16},{x:20,y:12},{x:20,y:20},...content.landmarks.map(m=>({x:m.x,y:m.y})),...life.houses.map(h=>({x:h.x,y:h.y+3})),...life.enemies.map(e=>({x:e.x,y:e.y})),...regionalTasks(content).filter(t=>t.kind!=='defeat').map(t=>({x:Math.floor(t.x/20),y:Math.floor(t.y/20)}))];
  const carve=(x,y)=>{for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(xx<0||xx>39||yy<0||yy>29||grid[yy][xx]==='house')continue;grid[yy][xx]=['water','lava','bridge'].includes(grid[yy][xx])?'bridge':'path'}};
  function connect(start,end){const costs=new Float64Array(1200).fill(Infinity),prev=new Int16Array(1200).fill(-1),done=new Uint8Array(1200);const from=start.y*40+start.x,to=end.y*40+end.x;costs[from]=0;for(let iter=0;iter<1200;iter++){let at=-1,best=Infinity;for(let i=0;i<1200;i++)if(!done[i]&&costs[i]<best){best=costs[i];at=i}if(at<0||at===to)break;done[at]=1;const x=at%40,y=Math.floor(at/40);for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;if(nx<0||nx>=40||ny<0||ny>=30)continue;const j=ny*40+nx,k=grid[ny][nx],cost=best+({path:.6,bridge:.9,ground:1,trees:2.8,rock:4,water:5,lava:6,house:Infinity}[k])+noise(seed,nx,ny)*1.7;if(cost<costs[j]){costs[j]=cost;prev[j]=at}}}for(let at=to;at!==-1;at=prev[at]){carve(at%40,Math.floor(at/40));if(at===from)break}}
  const joined=[nodes.shift()];while(nodes.length){let pick=0,parent=joined[0],best=Infinity;for(let i=0;i<nodes.length;i++)for(const n of joined){const d=Math.hypot(n.x-nodes[i].x,n.y-nodes[i].y);if(d<best){best=d;pick=i;parent=n}}const next=nodes.splice(pick,1)[0];connect(parent,next);joined.push(next)}
