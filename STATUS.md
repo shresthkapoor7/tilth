@@ -7,5 +7,6 @@ Updated 10 September 2026. Active branch: `codex/tilth-integration`, published d
 - The local server now reads the existing Notebook World API key from Tilth's ignored `.env`, using `gpt-5.6-terra`. Authentication and real generation succeeded. No credential is committed or pushed.
 - The browser walkthrough generated, accepted and completed **Rowan’s Ember Test** (smithy visit and Cinder Cleave), then received **Ashes in Motion** (inn visit and Ash Cyclone) automatically. The follow-up is offered in the local preview. A server-busy response recovered through explicit retry.
 - Quests currently track room visits and combos. Generated location/order prose adds no corresponding runtime constraint. Item delivery, real combat damage and notebook object/law mechanics remain unimplemented in this branch.
+- [Hand-drawn art port proposal](docs/ART_PORT.md) records the renderer audit and a path that preserves Tilth's systems. Art replacement is not implemented; key work includes separating outdoor collision from drawing and retaining character/weapon customization.
 
 See [integration notes](docs/INTEGRATION.md) for merge boundaries, validation and local run commands. Preview: http://127.0.0.1:5174/ . Other machines need their own server-side environment configuration; Git does not carry the local key.
