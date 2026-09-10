@@ -47,7 +47,7 @@ Three sequences trigger special finishers:
 
 Let each action finish, then start the next within **1.6 seconds**. Cooldown-blocked inputs do not count. The combo guide displays the selected weapon’s move names, and the HUD tracks sequence progress.
 
-A staged boss battle also previews the customized player attacking and a healer casting, with floating combat indicators. Overworld attacks now deal damage using facing, weapon range, and wall checks. Real multiplayer PvP, simulated projectile travel, and generated skill damage are still not implemented.
+A staged boss battle also previews the customized player attacking and a healer casting, with floating combat indicators. Overworld attacks now deal damage using facing, weapon range, and wall checks. Real multiplayer PvP and simulated projectile travel are still not implemented.
 
 ### Receive AI-generated content
 
@@ -60,7 +60,7 @@ The server requests structured content from the OpenAI Responses API. Results ar
 | First quest | Speak to Rowan near the inn |
 | Follow-up quest | Complete the current quest; one new request is queued automatically |
 | Replacement quest | Choose “Request a different task” on an offered or active quest |
-| Awakening offer | Three distinct meaningful events since the previous evaluation, with no unresolved offer/job |
+| Awakening offer | One offer per completed quest; automatically queued |
 | Journal reflection | Six new meaningful events, summarized in a batch |
 
 Meaningful events currently include first house discoveries, first combo achievements, and quest completion. Ordinary movement and opening the journal do not call the API. Repeated discoveries do not farm awakening progress.
@@ -105,8 +105,8 @@ Restart the dev server after configuring it. The model must be available to your
 | WASD / arrow keys | Move |
 | Space / 1, Q, E, R | Selected weapon’s attacks |
 | Shift | Dodge roll |
-| 2 / 3 / 4 | Guard, rally, and potion visual previews |
-| 5 | Activate an accepted awakening’s visual skill; keyboard shortcut only |
+| 2 / 3 / 4 | Guard, rally preview, and healing potion |
+| 5 | Activate the accepted awakening attack (also available in the awakening menu) |
 | Esc | Open the menu, return to it, or resume |
 | C | Create/edit character |
 | I | Inventory |
@@ -149,7 +149,7 @@ See [ENGINE.md](docs/ENGINE.md) for generation timing, persistence, validation, 
 - NPC hostility and retaliation are implemented. Assistance encounters and good/evil progression are not; striking a character records a fact but does not automatically assign moral traits.
 - Quest variety is bounded by three rooms and three combos; new quest titles do not create new playable locations or mechanics.
 - AI character generation selects supported features and may add custom pixel details. Weapon starter moves are authored, not invented by the LLM.
-- Appearance attachments use bounded pixel rectangles; generated awakening skills use supported visual primitives.
+- Appearance attachments use bounded pixel rectangles. Generated moves use engine-supported arc, thrust, beam, nova and spiral styles with validated damage and timing; the AI does not execute arbitrary code.
 - Class progression, functional stat effects, a complete equipment system, and full combat remain unfinished.
 - Production uses `npm start` to serve `dist` and the generation API together. Serving `dist` alone cannot handle AI requests.
 - Request caching and API budgets are process-local. A production multiplayer release needs authentication, authoritative events, and durable server storage.
@@ -180,3 +180,12 @@ Ash Raider and Cinder Sentry patrol the southern road and attack when approached
 Characters pursue using collision-checked paths, calm down after disengagement, and yield when their health reaches zero. They recover after 18 seconds of active outdoor play. Player defeat restores health at the outpost. Menus, dialogue, hidden tabs and interiors pause outdoor combat. Combat health and actor positions reset on reload; recorded provocations and received AI dialogue remain in the journal.
 
 A struck character immediately protests using an authored line. When AI is connected, a separate bounded request generates a short personal response; it never controls damage or movement. Replies arrive in overhead speech bubbles without pausing combat and are discarded if the character has already yielded or disengaged. Provider failures keep the authored response and show an availability message. These requests share the server's existing per-process generation budget with quests and character creation.
+
+
+## Generated awakening moves
+
+New awakenings include a primary attack and an AI-named, three-input combo finisher. The generator chooses the combo sequence, distinct animation styles, color, range, damage per hit and hit count. Press **5** for the primary attack, or open **U → Use move** on touch devices. Open **K** for the accepted combo's exact controls. The finisher replaces the last action in its sequence; wait for each action to finish before entering the next input.
+
+Both moves share a cooldown and deal real outdoor damage. Their directional or radial hit checks obey walls and Rowan's protection. Damage is capped at 90 per activation and up to three hits. Accepting another awakening replaces the current generated recipe; declined and pending offers do not grant moves. Learned generated finishers are recorded in the journal without farming discovery rewards. Saved move execution and rendering never request new move generation; hitting an NPC can still trigger its separate dialogue request.
+
+Existing saved awakenings remain valid and gain a basic 24-damage radial burst. Complete a quest to earn a new awakening-and-combo offer automatically. Each quest grants exactly one offer: accepting or declining it never grants a reroll. Failed requests retry the same reward. Further completed quests earn additional offers even when an earlier offer is still awaiting a decision. Exploration and practice alone do not generate awakenings. Older unfinished manual-generation requests are cancelled on reload; existing offered and accepted awakenings are preserved.

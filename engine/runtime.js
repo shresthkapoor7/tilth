@@ -13,6 +13,7 @@ export class GameRuntime {
     this.state.quests=this.state.quests.filter(q=>{try{validateContent('quest',q.content,this.state.events);return true}catch{return false}});
     if(!this.state.offers.some(o=>o.id===this.state.activeAwakening&&o.status==='accepted'))this.state.activeAwakening=null;
   }}catch{this.storageWarning='Saved progress could not be read; this session started fresh.'}
+  for(const job of this.state.jobs)if(job.kind==='awakening'&&!job.rewardQuestId&&['queued','running','failed'].includes(job.status)){job.status='cancelled';job.error=null;}
   this.state.characterMemory=restoreCharacterMemory(this.state.characterMemory,this.state.events);
  }
  subscribe(fn){this.listeners.add(fn);return()=>this.listeners.delete(fn)}
@@ -23,7 +24,7 @@ export class GameRuntime {
  record(type,target,label,{unique=false}={}){
   if(type==='room_entered'&&!HOUSES.some(h=>h.id===target))throw new Error('Unknown room');
   if(type==='combo_learned'&&!COMBOS.some(c=>c.id===target))throw new Error('Unknown combo');
-  if(!['room_entered','combo_learned','quest_requested','quest_completed','awakening_accepted','awakening_declined','combat_hit'].includes(type))throw new Error('Unknown event');
+  if(!['room_entered','combo_learned','quest_requested','quest_completed','awakening_accepted','awakening_declined','combat_hit','generated_combo'].includes(type))throw new Error('Unknown event');
   const key=`${type}:${target}`,first=!this.state.seen.includes(key);if(unique&&!first)return null;
   if(first)this.state.seen.push(key);
   const event={id:this.id(),type,target,label,time:this.clock(),meaningful:first&&['room_entered','combo_learned','quest_completed'].includes(type)};
@@ -34,10 +35,8 @@ export class GameRuntime {
    if(q.completed.every(Boolean)){q.status='complete';this.record('quest_completed',q.id,`Completed: ${q.content.title}`,{unique:true})}
   }
   const evidence=this.state.events.filter(e=>e.meaningful);
-  const pending=this.state.offers.some(o=>o.status==='pending')||this.state.jobs.some(j=>j.kind==='awakening'&&['queued','running','failed'].includes(j.status));
-  if(!pending&&evidence.length-this.state.lastAwakeningEvidence>=POLICY.awakeningEvidence){this.enqueue('awakening',`awakening:${evidence.length}`,evidence);this.state.lastAwakeningEvidence=evidence.length;}
   if(evidence.length-this.state.lastReflectionEvidence>=POLICY.reflectionEvidence){this.enqueue('journal',`journal:${evidence.length}`,evidence);this.state.lastReflectionEvidence=evidence.length;}
-  if(type==='quest_completed')this.requestQuest('followup');
+  if(type==='quest_completed'){this.requestAwakening(target);this.requestQuest('followup');}
   this.changed();return event;
  }
  requestQuest(reason='rowan'){
@@ -45,9 +44,19 @@ export class GameRuntime {
   const event=this.record('quest_requested',`rowan:${this.state.quests.length}`,reason==='followup'?'Requested the next chapter after completing a quest':'Asked Rowan for a task',{unique:true});
   if(event)this.enqueue('quest',`quest:${this.state.quests.length}`,[...this.state.events.filter(e=>e.meaningful).slice(-19),event]);this.changed();
  }
- context(job){return {version:1,kind:job.kind,events:this.state.events.filter(e=>job.eventIds.includes(e.id)),profile:this.state.profile,knownRooms:HOUSES.map(({id,name})=>({id,name})),knownCombos:COMBOS.map(({id,name})=>({id,name})),pastQuests:job.questHistory||questHistory(this.state.quests),activeAwakening:this.activeOffer()?.content.name||null}}
+ context(job){return {version:1,kind:job.kind,events:this.state.events.filter(e=>job.eventIds.includes(e.id)),profile:this.state.profile,...(job.rewardQuestId?{rewardQuestId:job.rewardQuestId}:{}),knownRooms:HOUSES.map(({id,name})=>({id,name})),knownCombos:COMBOS.map(({id,name})=>({id,name})),pastQuests:job.questHistory||questHistory(this.state.quests),activeAwakening:this.activeOffer()?.content.name||null}}
+ requestAwakening(questId){
+  const quest=this.state.quests.find(q=>q.id===questId&&q.status==='complete');
+  const completion=this.state.events.find(e=>e.type==='quest_completed'&&e.target===questId);
+  if(!quest||!completion)return;
+  const key=`awakening:quest:${questId}`;if(this.state.jobs.some(j=>j.key===key))return;
+  const evidence=this.state.events.filter(e=>e.meaningful&&e.id!==completion.id).slice(-19);
+  this.enqueue('awakening',key,[...evidence,completion]);
+  const job=this.state.jobs.find(j=>j.key===key);if(job)job.rewardQuestId=questId;
+  this.changed();
+ }
  activeOffer(){return this.state.offers.find(o=>o.id===this.state.activeAwakening&&o.status==='accepted')}
- complete(jobId,content){const job=this.state.jobs.find(j=>j.id===jobId);if(!job||job.status==='complete')return;validateContent(job.kind,content,this.context(job).events);
+ complete(jobId,content){const job=this.state.jobs.find(j=>j.id===jobId);if(!job||['complete','cancelled'].includes(job.status))return;validateContent(job.kind,content,this.context(job).events);
   if(job.kind==='awakening')this.state.offers.push({id:job.id,content,status:'pending'});
   if(job.kind==='quest')validateQuestNovelty(content,this.context(job).pastQuests);
   if(job.kind==='quest')this.state.quests.push({id:job.id,content,status:'offered',completed:content.objectives.map(()=>false)});
