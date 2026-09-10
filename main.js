@@ -1,9 +1,10 @@
+import {createInkStudy,studyMovement} from './engine/ink-study.js';
 import {installOnboarding} from './engine/onboarding.js';
 import {WEAPONS,characterContent,weaponMove} from './content/characters.js';
 import {installDialogue} from './engine/dialogue-ui.js';
 import {observeCharacterEvent,rowanGoal,rowanWaypoint,rowanConversation} from './engine/character-memory.js';
 import {nextGuidance} from './engine/quest-guidance.js';
-import {CLASS_COLORS,ITEMS} from './content/game-config.js';
+import {CLASS_COLORS,ITEMS,HOUSES} from './content/game-config.js';
 import {GameRuntime} from './engine/runtime.js';
 import {GenerationQueue} from './engine/generation.js';
 import {installGameUI} from './engine/game-ui.js';
@@ -19,7 +20,7 @@ import {advance,doorwayAt,exitAt} from './world.js';
 import {drawInterior} from './interiors.js';
 import {playSound, initSound} from './sound.js';
 import {drawVolcanic, drawHero, atmosphere} from './volcanic.js';
-const canvas=document.querySelector('#world'),ctx=canvas.getContext('2d');
+const canvas=document.querySelector('#world'),ctx=canvas.getContext('2d');canvas.width=1600;canvas.height=1200;
 let player={x:400,y:335}, gear='Ashguard armor', heroClass='Warrior', frame=0;
 let attackStart=-Infinity,attackKind='Slash',lastActionTick=0;
 const actionReady={};
@@ -28,9 +29,13 @@ const actionDefinition=name=>weaponMove(runtime.state.profile.weapon||'sword',na
 const actionName=name=>actionDefinition(name)?.name||name;
 const activeDuration=()=>actionDefinition(attackKind).duration;
 let facing='down', walkingUntil=0, currentRoom=null, returnPoint=null;
+const studyRequested=new URLSearchParams(location.search).get('art')==='ink',heldDirections=new Set();let studyLaunched=false;
+const inkStudy=createInkStudy({onChange:()=>draw(),onEnter:()=>openInkStudy()});
+window.addEventListener('keyup',e=>{const dir={w:'up',ArrowUp:'up',s:'down',ArrowDown:'down',a:'left',ArrowLeft:'left',d:'right',ArrowRight:'right'}[e.key];heldDirections.delete(dir)});
+window.addEventListener('blur',()=>heldDirections.clear());document.addEventListener('visibilitychange',()=>heldDirections.clear());
 const roomCanvas=document.createElement('canvas');roomCanvas.width=800;roomCanvas.height=600;
 const colors=CLASS_COLORS;
-const dialogue=installDialogue({speakerLabel:speaker=>speaker==='Evergreen'?(runtime.state.profile.name||'Evergreen'):speaker,drawPortrait(c,speaker){c.clearRect(0,0,120,120);const custom=speaker==='Evergreen'&&runtime.state.profile.onboarded?characterContent(runtime.state.profile):undefined;if(custom)drawAttachment(c,60,78,3,{appearance:custom.characterArt});drawHero(c,60,78,speaker==='Rowan'?'#96815b':colors[heroClass],3,undefined,false,{custom,direction:'down',role:speaker==='Rowan'?'Warrior':heroClass})},sound:()=>playSound('select')});
+const dialogue=installDialogue({speakerLabel:speaker=>speaker==='Evergreen'?(runtime.state.profile.name||'Evergreen'):speaker,drawPortrait(c,speaker){if(speaker==='Evergreen'&&inkStudy.portrait(c))return;c.clearRect(0,0,120,120);const custom=speaker==='Evergreen'&&runtime.state.profile.onboarded?characterContent(runtime.state.profile):undefined;if(custom)drawAttachment(c,60,78,3,{appearance:custom.characterArt});drawHero(c,60,78,speaker==='Rowan'?'#96815b':colors[heroClass],3,undefined,false,{custom,direction:'down',role:speaker==='Rowan'?'Warrior':heroClass})},sound:()=>playSound('select')});
 function recordCharacterMoment(event){const result=observeCharacterEvent(runtime.state.characterMemory,event,{room:currentRoom,player,rowan});runtime.state.characterMemory=result.memory;runtime.changed();dialogue.speak(result.lines)}
 function introduceCharacter(){if(runtime.state.profile.onboarded&&!runtime.state.characterMemory.introduced){runtime.state.characterMemory.introduced=true;runtime.changed();dialogue.speak([{speaker:'Evergreen',thought:true,text:'That man by the inn keeps looking this way. Maybe he knows somewhere I can stay.'}])}}
 
@@ -47,22 +52,44 @@ function sprite(c,x,y,color=colors[heroClass],scale=1,name){
 const bg=document.createElement('canvas');bg.width=800;bg.height=600;const b=bg.getContext('2d');
 function landscape(){drawVolcanic(b)}
 landscape();
-function draw(){canvas.style.objectPosition=`${player.x/800*100}% ${player.y/600*100}%`;ctx.drawImage(currentRoom?roomCanvas:bg,0,0);if(!currentRoom){sprite(ctx,290,315,'#507f9b',1,'Lunara');sprite(ctx,536,354,'#c6bca0',1,'Clover');sprite(ctx,215,369,'#9b6b3e',1,'Foxglove');drawHero(ctx,rowan.x,rowan.y,'#96815b',1,undefined,false,{direction:'down',walking:performance.now()<rowanWalkingUntil});pixelText(ctx,'!',rowan.x,rowan.y-31,'#ffec98',23);}sprite(ctx,player.x,player.y,gear==='Emberweave cloak'?'#b26943':colors[heroClass],1.2,'Evergreen');const awakened=runtime.activeOffer()?.content;if(awakened)drawGeneratedSkill(ctx,player.x,player.y,awakened,(performance.now()-generatedSkillStart)/awakened.skill.durationMs);const guidance=nextGuidance(runtime.state,player,currentRoom,rowan);if(guidance.target){const {x,y}=guidance.target;pixelText(ctx,'▼',x,y-35,'#ffe2a0',19);rect(ctx,x-10,y+12,20,2,'#edc67a');}if(!currentRoom)atmosphere(ctx,performance.now()/1000);rect(ctx,player.x-12,player.y+19,25,3,'#172325');rect(ctx,player.x-11,player.y+19,22,2,'#d9df92');if(frame>0){pixelText(ctx,frameText,player.x,player.y-52-(60-frame)/4,'#fff4b0',20);frame--}}let frameText='';draw();
+function draw(){
+ const studyRoom=currentRoom==='inn';inkStudy.setRoom(currentRoom);
+ canvas.style.objectPosition=`${player.x/800*100}% ${player.y/600*100}%`;
+ ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);
+ ctx.setTransform(studyRoom?3:2,0,0,studyRoom?3:2,studyRoom?-400:0,studyRoom?-240:0);
+ ctx.imageSmoothingEnabled=inkStudy.active;
+ const originalPlayer=()=>sprite(ctx,player.x,player.y,gear==='Emberweave cloak'?'#b26943':colors[heroClass],1.2,'Evergreen');
+ if(inkStudy.active){
+  const now=performance.now();inkStudy.drawRoom(ctx,{...player,facing,moving:now<walkingUntil,time:now,attack:now-attackStart<activeDuration()?(now-attackStart)/activeDuration():undefined,kind:attackKind,weapon:runtime.state.profile.weapon||'sword',reduced:matchMedia('(prefers-reduced-motion: reduce)').matches},originalPlayer,()=>{const custom=runtime.state.profile.onboarded?characterContent(runtime.state.profile):undefined;if(custom)drawAttachment(ctx,player.x,player.y,1.2,{appearance:custom.characterArt});drawAttachment(ctx,player.x,player.y,1.2,runtime.activeOffer()?.content)});
+ }else{
+  ctx.drawImage(currentRoom?roomCanvas:bg,0,0);
+  if(!currentRoom){sprite(ctx,290,315,'#507f9b',1,'Lunara');sprite(ctx,536,354,'#c6bca0',1,'Clover');sprite(ctx,215,369,'#9b6b3e',1,'Foxglove');drawHero(ctx,rowan.x,rowan.y,'#96815b',1,undefined,false,{direction:'down',walking:performance.now()<rowanWalkingUntil});pixelText(ctx,'!',rowan.x,rowan.y-31,'#ffec98',23)}
+  originalPlayer();
+ }
+ const awakened=runtime.activeOffer()?.content;if(awakened)drawGeneratedSkill(ctx,player.x,player.y,awakened,(performance.now()-generatedSkillStart)/awakened.skill.durationMs);
+ const guidance=nextGuidance(runtime.state,player,currentRoom,rowan);
+ if(guidance.target){const {x,y}=guidance.target;pixelText(ctx,'▼',x,y-35,inkStudy.active?'#9e654a':'#ffe2a0',19);rect(ctx,x-10,y+12,20,2,inkStudy.active?'#b48472':'#edc67a')}
+ if(!currentRoom)atmosphere(ctx,performance.now()/1000);
+ if(!inkStudy.active){rect(ctx,player.x-12,player.y+19,25,3,'#172325');rect(ctx,player.x-11,player.y+19,22,2,'#d9df92')}
+ if(frame>0){pixelText(ctx,frameText,player.x,player.y-52-(60-frame)/4,inkStudy.active?'#423253':'#fff4b0',20);frame--}
+}let frameText='';draw();
 function portrait(){let c=document.querySelector('#portrait').getContext('2d');c.clearRect(0,0,100,80);rect(c,20,66,62,4,'#d2d9be');drawHero(c,49,52,colors[heroClass],2.2,'',gear==='Sunsteel blade',{role:heroClass,custom:runtime.state.profile.onboarded?characterContent(runtime.state.profile):undefined})}portrait();
 const modal=document.querySelector('#modal'),body=document.querySelector('#modalBody');let toastTimer;function toast(t){const el=document.querySelector('#mapToast');el.textContent=t;el.classList.remove('quiet');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add('quiet'),4500)}function setLocation(title,subtitle){document.querySelector('.area-label strong').textContent=title;document.querySelector('.area-label span').textContent=subtitle;canvas.setAttribute('aria-label',title+'. Use WASD, arrow keys, or touch controls to move.');}
-function move(dir){
+function enterInterior(door){const visit=runtime.record('room_entered',door.id,`Discovered ${door.name}`);currentRoom=door.id;returnPoint={x:door.x+door.w/2,y:door.y+82};player={x:400,y:397};heldDirections.clear();drawInterior(roomCanvas.getContext('2d'),currentRoom);setLocation(door.name,'CINDERWATCH · INTERIOR');playSound('menu');draw();recordCharacterMoment(visit)}
+function openInkStudy(){if(dialogue.active||creator?.dialog.open)return;modal.close();heldDirections.clear();if(currentRoom!=='inn')enterInterior(HOUSES.find(h=>h.id==='inn'));else draw();}
+function move(dir,amount=12,quiet=false){
  if(modal.open||dialogue.active||creator?.dialog.open||performance.now()-attackStart<activeDuration())return;
- const oldX=player.x,oldY=player.y;facing=dir;
- const [dx,dy]={up:[0,-12],down:[0,12],left:[-12,0],right:[12,0]}[dir];
+ const oldX=player.x,oldY=player.y;if(!quiet)facing=dir;
+ const [dx,dy]={up:[0,-amount],down:[0,amount],left:[-amount,0],right:[amount,0]}[dir];
  const door=!currentRoom&&doorwayAt(player.x,player.y+dy,dir);
- if(door){const visit=runtime.record('room_entered',door.id,`Discovered ${door.name}`);currentRoom=door.id;returnPoint={x:door.x+door.w/2,y:door.y+82};player={x:400,y:397};drawInterior(roomCanvas.getContext('2d'),currentRoom);setLocation(door.name,'CINDERWATCH · INTERIOR');playSound('menu');draw();recordCharacterMoment(visit);return}
- if(currentRoom&&exitAt(player.x,player.y+dy,dir)){player={...returnPoint};currentRoom=null;facing='down';setLocation('Cinderwatch Outpost','THE ASHEN REACH');playSound('close');draw();return}
+ if(door){enterInterior(door);return}
+ if(currentRoom&&exitAt(player.x,player.y+dy,dir)){player={...returnPoint};currentRoom=null;heldDirections.clear();facing='down';setLocation('Cinderwatch Outpost','THE ASHEN REACH');playSound('close');draw();return}
  player=advance(player,dx,dy,currentRoom);
  if(player.x!==oldX||player.y!==oldY){walkingUntil=performance.now()+180;playSound('step')}else walkingUntil=0;
- draw();
+ if(!quiet)draw();
 }
 
-document.querySelectorAll('[data-move]').forEach(el=>el.onclick=()=>move(el.dataset.move));document.addEventListener('keydown',e=>{if(modal.open||dialogue.active||creator?.dialog.open)return;const dir={w:'up',ArrowUp:'up',s:'down',ArrowDown:'down',a:'left',ArrowLeft:'left',d:'right',ArrowRight:'right'}[e.key];if(dir){e.preventDefault();move(dir)}if(e.code==='Space'||e.key===' '){e.preventDefault();if(!e.repeat)skill('Slash');return}if(e.key.toLowerCase()==='f'){e.preventDefault();if(!e.repeat)requestQuest();return}if(e.key==='5'){e.preventDefault();if(!e.repeat)useAwakening();return}const extra={q:'Heavy',e:'Spin',r:'Bash',Shift:'Dodge'}[e.key];if(extra){e.preventDefault();if(!e.repeat)skill(extra);return}if('1234'.includes(e.key))skill(['Slash','Guard','Rally','Potion'][+e.key-1])});function skill(name){
+document.querySelectorAll('[data-move]').forEach(el=>el.onclick=()=>move(el.dataset.move));document.addEventListener('keydown',e=>{if(modal.open||dialogue.active||creator?.dialog.open)return;const dir={w:'up',ArrowUp:'up',s:'down',ArrowDown:'down',a:'left',ArrowLeft:'left',d:'right',ArrowRight:'right'}[e.key];if(dir){e.preventDefault();if(currentRoom==='inn'){if(!e.repeat){move(dir,3);heldDirections.add(dir)}return}move(dir)}if(e.code==='Space'||e.key===' '){e.preventDefault();if(!e.repeat)skill('Slash');return}if(e.key.toLowerCase()==='f'){e.preventDefault();if(!e.repeat)requestQuest();return}if(e.key==='5'){e.preventDefault();if(!e.repeat)useAwakening();return}const extra={q:'Heavy',e:'Spin',r:'Bash',Shift:'Dodge'}[e.key];if(extra){e.preventDefault();if(!e.repeat)skill(extra);return}if('1234'.includes(e.key))skill(['Slash','Guard','Rally','Potion'][+e.key-1])});function skill(name){
  if(modal.open||dialogue.active||creator?.dialog.open)return;
  const now=performance.now();
  if(ACTIONS[name]){
@@ -104,6 +131,8 @@ const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');let lastAmbie
 let lastCharacterTick=0;
 function animateScene(now){
  const characterDt=Math.min(50,Math.max(0,now-lastCharacterTick));lastCharacterTick=now;
+ if(document.hidden||modal.open||dialogue.active||creator?.dialog.open)heldDirections.clear();
+ if(currentRoom==='inn'&&heldDirections.size){const v=studyMovement(heldDirections,characterDt);if(!heldDirections.has(facing))facing=v.y?(v.y>0?'down':'up'):(v.x>0?'right':'left');if(v.x)move(v.x>0?'right':'left',Math.abs(v.x),true);if(currentRoom==='inn'&&v.y)move(v.y>0?'down':'up',Math.abs(v.y),true);if(v.x||v.y)draw();}
  if(!document.hidden&&!modal.open&&!creator?.dialog.open&&!currentRoom){const goal=rowanWaypoint(runtime.state.characterMemory,rowan),dx=goal.x-rowan.x,dy=goal.y-rowan.y,distance=Math.hypot(dx,dy);if(distance>.2){const length=Math.min(distance,characterDt*.07),next=advance(rowan,dx/distance*length,dy/distance*length);if(next.x!==rowan.x||next.y!==rowan.y)rowanWalkingUntil=now+100;rowan.x=next.x;rowan.y=next.y;draw()}}
 
  if(now-lastGuidance>120){lastGuidance=now;const guidance=nextGuidance(runtime.state,player,currentRoom,rowan),el=document.querySelector('#questTracker');el.querySelector('strong').textContent=guidance.title;el.querySelector('span').textContent=guidance.text;}
@@ -143,5 +172,7 @@ function refreshCharacter(){
  portrait();draw();
 }
 creator=installOnboarding({runtime,onSave:()=>{refreshCharacter();toast('Your adventure begins. Try your weapon with Space, Q, E, and R.')}});
-creator.dialog.addEventListener('close',introduceCharacter);
-if(runtime.state.profile.onboarded){refreshCharacter();introduceCharacter()}else creator.open();
+creator.dialog.addEventListener('close',()=>{if(!studyRequested)introduceCharacter()});
+function beginStudy(){if(studyRequested&&!studyLaunched&&runtime.state.profile.onboarded){studyLaunched=true;inkStudy.ready.then(()=>openInkStudy());return true}return false}
+creator.dialog.addEventListener('close',beginStudy);
+if(runtime.state.profile.onboarded){refreshCharacter();if(!beginStudy())introduceCharacter()}else creator.open();

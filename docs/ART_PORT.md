@@ -1,6 +1,6 @@
 # Hand-drawn presentation for Tilth
 
-10 September 2026. Architecture review of the local integration branch at `a4c1a90`. This is a proposal, not an implemented art replacement. Hayden asked whether Notebook World's drawing style can transfer while retaining Tilth's other elements.
+10 September 2026. Architecture review of the local integration branch at `a4c1a90`. The full port remains a proposal. A subsequent [playable illustrated inn](ART_STUDY.md) now demonstrates a bounded portion. Hayden asked whether Notebook World's drawing style can transfer while retaining Tilth's other elements.
 
 ## Recommendation
 
