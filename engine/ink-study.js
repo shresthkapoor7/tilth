@@ -108,6 +108,6 @@ export function createInkStudy({onChange,onEnter,getProfile}){
  }
  return {get ready(){return load()},get active(){return state.room==='inn'&&state.enabled&&state.loaded},get drawnAvatar(){return state.enabled&&useDrawnAvatar()&&state.loaded},refreshProfile(){state.avatar='auto';sync()},
   setRoom(room){if(room!==state.room){state.room=room;lastPosition=null;if(room==='inn')void load();sync()}},portrait,
-  drawRoom(c,player,drawOriginalPlayer,drawAttachments){c.drawImage(background,0,0,800,600);for(const item of orderedInterior('inn',player.y)){if(item.kind==='player'){if(useDrawnAvatar()){drawAttachments();drawPlayer(c,player)}else drawOriginalPlayer();continue}const f=furnishings.inn[item.index],p=furniturePlacement(f);c.fillStyle='#101b2048';c.fillRect(p.x+2,p.y+p.h-1,p.w,4);blit(c,assets[f.type],p.x,p.y,p.w,p.h)}}
+  drawRoom(c,player,drawOriginalPlayer,drawAttachments,beforePlayer=()=>{}){c.drawImage(background,0,0,800,600);for(const item of orderedInterior('inn',player.y)){if(item.kind==='player'){beforePlayer();if(useDrawnAvatar()){drawAttachments();drawPlayer(c,player)}else drawOriginalPlayer();continue}const f=furnishings.inn[item.index],p=furniturePlacement(f);c.fillStyle='#101b2048';c.fillRect(p.x+2,p.y+p.h-1,p.w,4);blit(c,assets[f.type],p.x,p.y,p.w,p.h)}}
  };
 }
