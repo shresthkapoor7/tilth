@@ -180,3 +180,7 @@ Ash Raider and Cinder Sentry patrol the southern road and attack when approached
 Characters pursue using collision-checked paths, calm down after disengagement, and yield when their health reaches zero. They recover after 18 seconds of active outdoor play. Player defeat restores health at the outpost. Menus, dialogue, hidden tabs and interiors pause outdoor combat. Combat health and actor positions reset on reload; recorded provocations and received AI dialogue remain in the journal.
 
 A struck character immediately protests using an authored line. When AI is connected, a separate bounded request generates a short personal response; it never controls damage or movement. Replies arrive in overhead speech bubbles without pausing combat and are discarded if the character has already yielded or disengaged. Provider failures keep the authored response and show an availability message. These requests share the server's existing per-process generation budget with quests and character creation.
+
+## Astra creation tools
+
+Query Tilth's authored maps, NPCs and procedural asset catalog, then have Astra propose a validated map, connected dungeon or NPC draft. Run `npm run creation:smoke` for an offline example. Drafts do not alter the playable world. See [creation tools and API](docs/CREATION_TOOLS.md).

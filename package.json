@@ -6,7 +6,9 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "test": "node --test world.test.js combos.test.js engine/*.test.js server/*.test.js",
-    "start": "node server/start.js"
+    "start": "node server/start.js",
+    "creation:smoke": "node --env-file-if-exists=.env scripts/smoke-creation.mjs",
+    "test:creation-smoke": "node --test scripts/smoke-creation.test.mjs"
   },
   "devDependencies": {
     "vite": "^7.1.0"
