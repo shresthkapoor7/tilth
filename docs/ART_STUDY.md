@@ -1,34 +1,41 @@
 # Playable illustrated inn
 
-10 September 2026. A bounded proof of the [art-port proposal](ART_PORT.md), implemented on `codex/tilth-integration`.
+10 September 2026. A bounded proof of the [art-port proposal](ART_PORT.md), on `codex/tilth-integration`. The second pass follows Tilth's own designs and palette; it replaces the mismatched Notebook World study furniture and outfit.
 
 ## Try it
 
-Run the existing Vite development server, then open `http://127.0.0.1:5174/?art=ink` on this host. The link enters The Ember Rest through the shared room-entry handler. An **Art study** button in the village opens the same room. First-time players still use Tilth's character creator.
+Run the existing Vite server and open `http://127.0.0.1:5174/?art=ink`. The link enters The Ember Rest through the normal room-entry handler. **Art study** in the village opens the same room. New players still use Tilth's character creator.
 
-- Use **Ink / Pixel** to compare the same room at the same player position.
-- Use **Drawn avatar / Saved avatar** to compare the prepared outfit with the saved character's actual appearance. The study does not overwrite the profile.
-- Hold WASD/arrows to walk continuously inside the inn. Walk around the table to see front/behind compositing. Other rooms and the village retain their existing movement behavior.
-- Space, Q, E, R and Shift still invoke Tilth's weapon actions and combos. T opens existing quests; the bottom doorway returns to the village.
+- **Ink / Pixel** compares the same room at the same player position.
+- Hold WASD/arrows to walk continuously in the inn and around its furniture.
+- **Drawn avatar / Saved avatar** compares the covered appearance with its pixel rendering. Other editor appearances automatically retain their saved pixel rendering.
+- Existing weapon actions, combos, quests and the bottom doorway remain available.
 
-## Implemented boundary
+![Tilth designs redrawn in ink](art/tilth-ink-v2.png)
 
-The inn's existing furnishing records own every collision footprint. Drawing placement uses the same widths and ground-contact lines, with separate illustration height. Props and the actor are ordered by their ground position. The illustrated shell is cached; the main Canvas uses a sharper backing resolution and the same 800 by 600 logical coordinates. Both comparison modes use the same closer inn framing.
+## Corrected camera and designs
 
-Eight prepared PNGs supply furniture, a portrait and four directional animation sheets. They load once when the study is requested or the inn is entered; ordinary village startup does not fetch them. Alpha and crop inspection happen during loading, not each rendered frame. Asset failures leave the original pixel room available. No model call is required for walking, turning or drawing these assets.
+References were captured from `interiors.js` and `volcanic.js`, using the actual furnishing data and the saved Ember appearance. Assets retain the straight rectangular bed, cream pillow, teal blanket and ochre band; the brown table with parchment and sage cup; and the wooden chest with brass straps and latch. The character retains brown Swept hair, a copper Coat, dark underclothes and brown boots. These are illustrative interpretations of the source designs, not a claim of pixel-exact geometry or color reproduction by the generator.
 
-The study reuses Tilth's runtime, profile, event ledger, quests, generation queue, room transitions, input actions and sound. A normal inn entry is recorded and may advance an accepted visit objective under the existing rules. Switching presentation or avatar does not record a gameplay event. Outdoor collision construction still belongs to the original renderer; this interior proof does not replace that renderer or require the broader extraction proposed in ART_PORT.
+All furniture now draws at its original `x`, `y`, `w`, `h`. The previous height offsets and front-facing desk/cupboard substitutions are removed. The table has equal horizontal front/back edges, screen-vertical depth edges and a shallow underside, instead of a trapezoid with long foreground legs. Floorboards, rug, walls, doorway and candles retain Tilth's original construction and palette. The room shell uses cached Canvas linework.
 
-## Verified
+The table and character use the first generated drawings selected by Hayden. Later regeneration attempts were rejected. Hayden explicitly authorized programmatic checkerboard removal: the preparation script changes alpha only and preserves source RGB. Original inputs, generation prompts, hashes and light/dark cutout QA are retained under `docs/art/`.
 
-- All 45 tests pass, including four new checks for footprint registration, actor/prop overlap order, continuous movement against the actual inn furniture, bounded input time and prepared animation-frame selection.
-- Modern unminified Vite build passes with the existing Windows host workaround.
-- Browser walkthrough at 1280 by 720: loaded the illustrated room; saw the real first-visit thought with the drawn portrait; moved to the table's collision edge; switched Ink/Pixel at the same position; restored the saved customized avatar; walked around the furniture and behind the table; executed a recognized Cinder Cleave with the saved bow; exited through the normal doorway into the original village; reloaded the study successfully.
+## Runtime boundary
 
-No frame-rate or network-latency benchmark is claimed. Source sheets are intentionally retained at their current quality and size for the proof; shipping-size optimization is pending.
+Four prepared PNGs load once on study request or inn entry; ordinary village startup does not fetch them. PNG alpha checks and sprite-cell bounds are computed on load. The 8-column, 4-row character atlas contains six walking cells and two settling/idle cells per direction. Every cell uses a shared scale and registered origin instead of stretching each pose independently. These are not yet a complete set of intermediate directional turns or drawn combat poses.
 
-## Limits of this proof
+Tilth still owns collisions, movement, transitions, profiles, the event ledger, quests, generation queue, effects and sound. A real inn entry may advance an accepted visit objective. Presentation changes do not create gameplay events. Art drawing and movement require no image generation call. Asset failures keep the original pixel room available. Actor/prop ordering still uses ground position, while collision continues to prevent walking through furniture.
 
-The illustrated avatar has one prepared outfit. The saved avatar switch preserves all existing visual customization. Weapon effects and attack body motion reuse Tilth's procedural implementation; this is not a complete set of drawn combat poses. The original cast, other interiors, village, creator previews and awakening/battle screens are not fully reskinned. The low cupboard stands in for the inn's storage prop. Further camera, framing, animation and alpha-edge polish remains; mobile-specific visual validation has not been completed.
+The full-avatar sheet only covers Swept hair `#705039`, skin `#e4b47e`, Coat `#a85b37`. A different name or weapon works with the same drawn body. Changing any uncovered appearance field automatically restores the actual saved pixel character, including in dialogue. Restoring the covered choices restores the drawn option. Custom attachments and weapon animations still come from Tilth.
 
-Next: choose whether this visual result is strong enough to extend, then build a registered modular character/weapon set and a coherent Tilth-specific prop set. Preserve the pixel renderer as a fallback while coverage grows.
+See [customizable character art](CHARACTER_ART.md) for the proposed registered layers, color masks, per-direction draw order and editor integration. The current complete-character atlas is an appearance proof, not that modular system.
+
+## Validation
+
+- All 46 tests pass, including unchanged game rules, exact illustration footprint registration, actor/prop ordering, bounded continuous movement against actual furnishing data, prepared frame selection and editor fallback rules.
+- Modern unminified Vite build passes using `node node_modules/vite/bin/vite.js build --configLoader native --minify false --target esnext` on this Windows host.
+- Browser inspection at 1280 by 720 covers the original/drawn room comparison, alpha edges, continuous movement around furniture and behind the table, hairstyle and hair-color edits, and restoring the drawn appearance. Four art files loaded and no page errors occurred. This isolated visual check disabled model requests.
+- The first proof previously verified a recognized bow combo, first-visit dialogue and the normal exit into the village with the live runtime.
+
+No frame-rate or network-latency benchmark is claimed. Shipping-size optimization, full directional turning, drawn attack poses, modular customization, NPCs, other locations and mobile layout polish remain outside this proof.

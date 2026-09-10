@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {furnishings,advance,exitAt} from '../world.js';
-import {furniturePlacement,orderedInterior,studyMovement,walkFrame} from './ink-study.js';
+import {furniturePlacement,orderedInterior,studyMovement,walkFrame,supportsInkAvatar} from './ink-study.js';
+import {DEFAULT_CHARACTER} from '../content/characters.js';
 
 test('illustrated furniture keeps the existing footprint width and ground contact',()=>{
  const before=JSON.stringify(furnishings);
- for(const f of furnishings.inn){const p=furniturePlacement(f);assert.equal(p.x,f.x);assert.equal(p.w,f.w);assert.equal(p.y+p.h,f.y+f.h);assert.equal(p.depth,f.y+f.h)}
+ for(const f of furnishings.inn){const p=furniturePlacement(f);assert.equal(p.x,f.x);assert.equal(p.y,f.y);assert.equal(p.w,f.w);assert.equal(p.h,f.h);assert.equal(p.y+p.h,f.y+f.h);assert.equal(p.depth,f.y+f.h)}
  assert.equal(JSON.stringify(furnishings),before);
 });
 test('the same table can occlude an actor behind it and be occluded from the front',()=>{
@@ -24,4 +25,10 @@ test('continuous study movement uses the existing walls and retains the exit',()
 test('walk and turn selection only uses prepared cells, including reduced motion',()=>{
  for(let d=0;d<2000;d++){assert.ok(walkFrame(d,true)>=0&&walkFrame(d,true)<6)}
  assert.equal(walkFrame(900,true,100),6);assert.equal(walkFrame(900,true,20),7);assert.equal(walkFrame(900,true,100,true),7);assert.equal(walkFrame(900,false),7);
+});
+test('the prepared avatar cannot conceal unsupported character editor choices',()=>{
+ assert.equal(supportsInkAvatar(DEFAULT_CHARACTER),true);
+ assert.equal(supportsInkAvatar({...DEFAULT_CHARACTER,name:'Ember',weapon:'bow'}),true);
+ for(const change of [{hairStyle:'Braid'},{hairColor:'#302d2b'},{skinColor:'#774d3d'},{clothing:'Armor'},{outfitColor:'#497985'}])assert.equal(supportsInkAvatar({...DEFAULT_CHARACTER,...change}),false);
+ assert.equal(supportsInkAvatar(undefined),false);
 });

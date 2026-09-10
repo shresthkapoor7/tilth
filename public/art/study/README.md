@@ -1,7 +1,23 @@
 # Prepared illustration study assets
 
-Copied without image modifications from Notebook World's prepared artwork on `codex/notebook-checkpoint` (`dc6eee2`), created during Hayden's original game task. These are original generated drawings, not assets extracted from OMORI. The drawing language remains a study rather than approved final production art.
+## Active Tilth-specific assets (v2)
 
-The four walk sheets each contain six walking drawings plus two turn/idle cells. They depict one fixed character and outfit. The inn uses the bed, desk and low cupboard as presentation for Tilth's existing bed, table and storage footprints. The source PNGs retain their alpha; the renderer validates transparency and computes source crops and frame registration once on load. No image editing, runtime image generation or credential is included here.
+`tilth-bed-v2.png`, `tilth-table-v2.png`, `tilth-chest-v2.png` and `tilth-ember-v2.png` were generated using the built-in image tool on 10 September 2026 from references captured directly from Tilth's own renderer. They follow the original subject designs and palette with ink and colored-pencil treatment. No OMORI assets are used.
 
-The current proof deliberately retains Tilth's original weapon/effect renderers and offers its saved customized avatar as a separate display choice. Broader drawn customization and fully illustrated combat poses are pending. See `docs/ART_PORT.md` and `docs/ART_STUDY.md` in the repository root.
+The 8-column, 4-row Ember atlas has rows down, left, up, right. Columns 1–6 contain walking poses; columns 7–8 contain settling/idle poses. It covers the brown Swept hair, copper Coat appearance only. Weapons and custom attachments remain separate original Tilth rendering.
+
+The table and Ember PNGs derive from the **first** generated versions. After later image-tool repair attempts degraded the drawings and still returned fake transparency, Hayden explicitly requested programmatic background removal on those first versions. `scripts/prepare-ink-cutouts.py` changes only background/edge alpha and preserves every source RGB value. Bed and chest were copied unchanged with their generated alpha. The renderer checks alpha and computes source crops on load.
+
+Original approved table and Ember inputs are retained in `docs/art/source/`. To reproduce the two cutouts with Pillow and numpy, from the repository root:
+
+```sh
+python scripts/prepare-ink-cutouts.py docs/art/source/tilth-table-first.png docs/art/source/tilth-ember-first.png
+```
+
+Generation prompts, native-renderer references, asset hashes and light/dark alpha QA are in `docs/art/`. No credentials or runtime generation requirement are included.
+
+## Earlier Notebook World studies
+
+The other PNGs were copied without changes from Notebook World's prepared artwork on `codex/notebook-checkpoint` (`dc6eee2`). They are retained for history/reference but are no longer loaded by the inn proof. Their blue-haired character, front-view desk and cupboard do not represent the approved Tilth-specific direction.
+
+See `docs/ART_STUDY.md` and `docs/CHARACTER_ART.md` for scope, validation and the proposed customization pipeline.

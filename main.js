@@ -30,7 +30,7 @@ const actionName=name=>actionDefinition(name)?.name||name;
 const activeDuration=()=>actionDefinition(attackKind).duration;
 let facing='down', walkingUntil=0, currentRoom=null, returnPoint=null;
 const studyRequested=new URLSearchParams(location.search).get('art')==='ink',heldDirections=new Set();let studyLaunched=false;
-const inkStudy=createInkStudy({onChange:()=>draw(),onEnter:()=>openInkStudy()});
+const inkStudy=createInkStudy({onChange:()=>draw(),onEnter:()=>openInkStudy(),getProfile:()=>characterContent(runtime.state.profile)});
 window.addEventListener('keyup',e=>{const dir={w:'up',ArrowUp:'up',s:'down',ArrowDown:'down',a:'left',ArrowLeft:'left',d:'right',ArrowRight:'right'}[e.key];heldDirections.delete(dir)});
 window.addEventListener('blur',()=>heldDirections.clear());document.addEventListener('visibilitychange',()=>heldDirections.clear());
 const roomCanvas=document.createElement('canvas');roomCanvas.width=800;roomCanvas.height=600;
@@ -169,7 +169,7 @@ function refreshCharacter(){
  document.querySelector('.hud-health').setAttribute('aria-label',`${profile.name||'Evergreen'}, level 12. Health 240 of 280. Mana 85 of 100.`);
  const icons={sword:'⚔',spear:'↟',bow:'➶',staff:'✦'};
  for(const button of document.querySelectorAll('[data-skill]')){const slot=button.dataset.skill,move=WEAPONS[profile.weapon||'sword'].moves[slot];if(!move)continue;const key={Slash:'Space / 1',Heavy:'Q',Spin:'E',Bash:'R'}[slot];button.title=`${key} · ${move.name}`;button.setAttribute('aria-label',`${move.name} (${key})`);if(slot==='Slash')button.querySelector('span').textContent=icons[profile.weapon||'sword']}
- portrait();draw();
+ inkStudy.refreshProfile();portrait();draw();
 }
 creator=installOnboarding({runtime,onSave:()=>{refreshCharacter();toast('Your adventure begins. Try your weapon with Space, Q, E, and R.')}});
 creator.dialog.addEventListener('close',()=>{if(!studyRequested)introduceCharacter()});
